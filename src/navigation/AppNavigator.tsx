@@ -4,8 +4,7 @@ import MapScreen from '../screens/MapScreen';
 import WeatherScreen from '../screens/WeatherScreen';
 import ChatScreen from '../screens/ChatScreen';
 import SpeedometerScreen from '../screens/SpeedometerScreen';
-import RecordListScreen from '../screens/RecordListScreen';
-import RecordDetailScreen from '../screens/RecordDetailScreen';
+import RecordScreen from '../screens/RecordScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -44,11 +43,15 @@ export default function AppNavigator() {
       />
       <Tab.Screen
         name="Records"
-        component={RecordListScreen}
+        component={RecordScreen}
         options={{
           tabBarLabel: '骑行记录',
           tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="chart-line" size={28} color={color} />
+            <MaterialCommunityIcons 
+              name="chart-line" 
+              size={28} 
+              color={color} 
+            />
           )
         }}
       />
@@ -71,11 +74,6 @@ export default function AppNavigator() {
             <MaterialCommunityIcons name="chat" size={28} color={color} />
           )
         }}
-      />
-      <Tab.Screen
-        name="RecordDetail"
-        component={RecordDetailScreen}
-        options={{ title: '骑行详情' }}
       />
     </Tab.Navigator>
   );
