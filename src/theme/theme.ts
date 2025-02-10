@@ -1,4 +1,18 @@
-import { createTheme } from '@rneui/themed';
+import { createTheme, ThemeOptions } from '@rneui/themed';
+
+// 扩展主题类型
+declare module '@rneui/themed' {
+  export interface Theme {
+    colors: {
+      primary: string;
+      secondary: string;
+      background: string;
+      white: string;
+      divider: string;
+      // 添加其他需要的颜色
+    };
+  }
+}
 
 export const theme = createTheme({
   components: {

@@ -14,13 +14,14 @@ type Region = {
   longitudeDelta: number;
 };
 
-type MapScreenType = FC | (() => JSX.Element);
+type MapScreenType = FC;
 
 let MapScreen: MapScreenType;
+
 if (Platform.OS === 'web') {
-  MapScreen = require('./MapScreen.web').default as FC;
+  MapScreen = require('./MapScreen.web').default;
 } else {
-  MapScreen = require('./MapScreen.native').default as FC;
+  MapScreen = require('./MapScreen.native').default;
 }
 
 const MapScreen: React.FC = () => {

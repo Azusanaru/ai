@@ -1,17 +1,15 @@
 import { Stack } from 'expo-router';
 import { ThemeProvider } from '@rneui/themed';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { theme } from '../src/theme/theme';
+import { useRouter } from 'expo-router';
+import AppNavigator from '../src/navigation/AppNavigator';
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const router = useRouter();
 
   return (
     <ThemeProvider theme={theme}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack screenOptions={{ headerShown: false }} />
-      </ThemeProvider>
+      <AppNavigator />
     </ThemeProvider>
   );
 }

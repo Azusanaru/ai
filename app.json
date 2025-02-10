@@ -15,7 +15,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.czcheng1997.ai"
     },
     "web": {
       "bundler": "metro",
@@ -45,6 +46,9 @@
         "projectId": "c830cb1a-a347-4d9f-bab9-65ac6794aba6"
       }
     },
-    "owner": "czcheng1997"
+    "owner": "czcheng1997",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
   }
 }

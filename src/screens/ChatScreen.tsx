@@ -1,11 +1,93 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Input, Button } from '@rneui/themed';
+import React, { useState } from 'react';
+import { View, FlatList, StyleSheet, TextInput, TouchableOpacity, Text } from 'react-native';
+import { Avatar, Input, ListItem } from '@rneui/themed';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { theme } from '../theme/theme';
 
 export default function ChatScreen() {
+  const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState([
+    { id: 1, text: '今天天气不错，适合骑行！', isMe: true, time: '10:30' },
+    { id: 2, text: '是的，风速也很合适', isMe: false, time: '10:31' },
+    { id: 3, text: '下午3点老地方见', isMe: false, time: '10:32' },
+    { id: 4, text: '没问题，带好装备', isMe: true, time: '10:33' },
+  ]);
+
+  const sendMessage = () => {
+    if (message.trim()) {
+      setMessages(prev => [
+        ...prev,
+        { id: Date.now(), text: message, isMe: true, time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) }
+      ]);
+      setMessage('');
+    }
+  };
+
   return (
-    <View>
-      <Text>聊天界面</Text>
+    <View style={styles.container}>
+      {/* 聊天列表 */}
+      <FlatList
+        data={messages}
+        keyExtractor={item => item.id.toString()}
+        contentContainerStyle={styles.listContent}
+        renderItem={({ item, index }) => (
+          <View>
+            {/* 时间分隔线 */}
+            {(index === 0 || messages[index-1].time !== item.time) && (
+              <View style={styles.timeContainer}>
+                <Text style={styles.timeText}>{item.time}</Text>
+              </View>
+            )}
+
+            {/* 消息气泡 */}
+            <View style={[styles.bubble, item.isMe ? styles.myBubble : styles.otherBubble]}>
+              {!item.isMe && (
+                <Avatar
+                  size={36}
+                  rounded
+                  source={{ uri: 'https://randomuser.me/api/portraits/men/1.jpg' }}
+                  containerStyle={styles.avatar}
+                />
+              )}
+              <View>
+                <Text style={item.isMe ? styles.myText : styles.otherText}>
+                  {item.text}
+                </Text>
+                <Text style={styles.timeStamp}>
+                  {item.time}
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
+      />
+
+      {/* 输入区域 */}
+      <View style={styles.inputContainer}>
+        <TouchableOpacity style={styles.plusButton}>
+          <Ionicons name="add-circle" size={32} color={theme.colors.primary} />
+        </TouchableOpacity>
+
+        <TextInput
+          style={styles.input}
+          value={message}
+          onChangeText={setMessage}
+          placeholder="输入消息..."
+          placeholderTextColor="#999"
+          multiline
+        />
+
+        <TouchableOpacity 
+          style={styles.sendButton} 
+          onPress={sendMessage}
+        >
+          <MaterialIcons 
+            name={message ? "send" : "tag-faces"} 
+            size={28} 
+            color={theme.colors.primary} 
+          />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -13,59 +95,82 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5'
+    backgroundColor: '#f0f0f0'
+  },
+  listContent: {
+    paddingVertical: 16
+  },
+  timeContainer: {
+    alignSelf: 'center',
+    backgroundColor: '#d8d8d8',
+    borderRadius: 4,
+    marginVertical: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4
+  },
+  timeText: {
+    color: '#666',
+    fontSize: 12
+  },
+  bubble: {
+    maxWidth: '80%',
+    minHeight: 40,
+    padding: 12,
+    marginVertical: 4,
+    marginHorizontal: 16,
+    borderRadius: 8
+  },
+  myBubble: {
+    backgroundColor: '#9eea6a',
+    borderTopRightRadius: 2
+  },
+  otherBubble: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 2,
+    flexDirection: 'row',
+    alignItems: 'flex-start'
+  },
+  avatar: {
+    marginRight: 8
+  },
+  myText: {
+    color: '#000',
+    fontSize: 16
+  },
+  otherText: {
+    color: '#333',
+    fontSize: 16
+  },
+  timeStamp: {
+    fontSize: 10,
+    color: '#666',
+    marginTop: 4,
+    alignSelf: 'flex-end'
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#eee'
+    padding: 8,
+    backgroundColor: 'white',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#ddd'
+  },
+  plusButton: {
+    marginHorizontal: 4
   },
   input: {
     flex: 1,
-    backgroundColor: '#f8f8f8',
+    minHeight: 40,
+    maxHeight: 100,
+    backgroundColor: '#f0f0f0',
     borderRadius: 20,
-    paddingHorizontal: 15,
+    paddingHorizontal: 16,
     paddingVertical: 8,
-    marginRight: 10
+    marginHorizontal: 8,
+    fontSize: 16
   },
   sendButton: {
-    backgroundColor: '#2196F3',
-    borderRadius: 20,
-    padding: 10
-  },
-  messageList: {
-    padding: 15
-  },
-  myBubble: {
-    backgroundColor: '#2196F3',
-    marginLeft: 60,
-    borderTopRightRadius: 15,
-    borderBottomRightRadius: 15,
-    borderTopLeftRadius: 15
-  },
-  otherBubble: {
-    backgroundColor: '#e0e0e0',
-    marginRight: 60,
-    borderTopLeftRadius: 15,
-    borderBottomLeftRadius: 15,
-    borderTopRightRadius: 15
+    marginHorizontal: 4,
+    padding: 4
   }
-});
-
-const MessageInput = () => (
-  <Input
-    placeholder="输入消息..."
-    containerStyle={styles.inputContainer}
-    inputContainerStyle={styles.input}
-    rightIcon={
-      <Button
-        icon={{ name: 'send', color: 'white' }}
-        buttonStyle={styles.sendButton}
-        type="clear"
-      />
-    }
-  />
-); 
+}); 

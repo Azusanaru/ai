@@ -1,7 +1,11 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import MapScreen from '../screens/MapScreen';
 import WeatherScreen from '../screens/WeatherScreen';
 import ChatScreen from '../screens/ChatScreen';
+import SpeedometerScreen from '../screens/SpeedometerScreen';
+import RecordListScreen from '../screens/RecordListScreen';
+import RecordDetailScreen from '../screens/RecordDetailScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -9,30 +13,69 @@ export default function AppNavigator() {
   return (
     <Tab.Navigator
       screenOptions={{
+        headerShown: false,
         tabBarActiveTintColor: '#2196F3',
         tabBarInactiveTintColor: '#666',
         tabBarStyle: {
-          height: 60,
-          paddingBottom: 8,
-          borderTopWidth: 0,
-          elevation: 8
+          paddingBottom: 4,
+          height: 60
         }
       }}
     >
-      <Tab.Screen 
-        name="Map" 
+      <Tab.Screen
+        name="Speedometer"
+        component={SpeedometerScreen}
+        options={{
+          tabBarLabel: '码表',
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="speedometer" size={28} color={color} />
+          )
+        }}
+      />
+      <Tab.Screen
+        name="Map"
         component={MapScreen}
-        options={{ title: '轨迹地图' }}
+        options={{
+          tabBarLabel: '地图',
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="map" size={28} color={color} />
+          )
+        }}
       />
-      <Tab.Screen 
-        name="Weather" 
+      <Tab.Screen
+        name="Records"
+        component={RecordListScreen}
+        options={{
+          tabBarLabel: '骑行记录',
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="chart-line" size={28} color={color} />
+          )
+        }}
+      />
+      <Tab.Screen
+        name="Weather"
         component={WeatherScreen}
-        options={{ title: '实时天气' }}
+        options={{
+          tabBarLabel: '天气',
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="weather-cloudy" size={28} color={color} />
+          )
+        }}
       />
-      <Tab.Screen 
-        name="Chat" 
+      <Tab.Screen
+        name="Chat"
         component={ChatScreen}
-        options={{ title: '骑友社区' }}
+        options={{
+          tabBarLabel: '聊天',
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="chat" size={28} color={color} />
+          )
+        }}
+      />
+      <Tab.Screen
+        name="RecordDetail"
+        component={RecordDetailScreen}
+        options={{ title: '骑行详情' }}
       />
     </Tab.Navigator>
   );
