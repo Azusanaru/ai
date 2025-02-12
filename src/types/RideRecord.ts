@@ -16,4 +16,13 @@ export interface RideRecord {
     humidity: number;
     windSpeed: number;
   };
+}
+
+export function isValidRideRecord(record: any): record is RideRecord {
+  return (
+    typeof record?.distance === 'number' &&
+    typeof record?.maxSpeed === 'number' &&
+    Array.isArray(record?.path) &&
+    record.weather?.temp !== undefined
+  );
 } 

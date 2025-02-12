@@ -1,3 +1,0 @@
-import React from 'react';
-import MapView from 'react-native-maps';
-// ...其他原生端代码... 

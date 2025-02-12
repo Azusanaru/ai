@@ -3,7 +3,7 @@ import { Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
 import MapView, { PROVIDER_GOOGLE,  } from 'react-native-maps';
 import { StyleSheet, View, Pressable, Platform } from 'react-native';
-import { Icon } from '@expo/vector-icons';
+import { Icon } from '@rneui/themed';
 import { Overlay } from '@rneui/themed';
 import { theme } from '../theme/theme';
 
@@ -16,15 +16,7 @@ type Region = {
 
 type MapScreenType = FC;
 
-let MapScreen: MapScreenType;
-
-if (Platform.OS === 'web') {
-  MapScreen = require('./MapScreen.web').default;
-} else {
-  MapScreen = require('./MapScreen.native').default;
-}
-
-const MapScreen: React.FC = () => {
+const MapScreen: MapScreenType = () => {
   const [region, setRegion] = useState<Region>({
     latitude: 31.2304,    // 上海纬度
     longitude: 121.4737,  // 上海经度

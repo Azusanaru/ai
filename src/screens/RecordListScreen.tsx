@@ -4,10 +4,12 @@ import { ListItem, Text, Avatar, Icon } from '@rneui/themed';
 import { getRideRecords } from '../services/RecordStorage';
 import { RideRecord } from '../types/RideRecord';
 import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../navigation/types';
 
 export default function RecordListScreen() {
   const [records, setRecords] = useState<RideRecord[]>([]);
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   useEffect(() => {
     const loadRecords = async () => {

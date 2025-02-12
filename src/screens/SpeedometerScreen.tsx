@@ -7,6 +7,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../theme/theme';
 import { RideRecord } from '../types/RideRecord';
 import { saveRideRecord } from '../services/RecordStorage';
+import { calculateDistance } from '../utils/geo';
+// import { calculateCalories } from '../utils/calories';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import DataItem from '../components/DataItem';
+import { useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from '../navigation/types';
 
 export default function SpeedometerScreen() {
   const [speed, setSpeed] = useState(0);
@@ -15,85 +21,85 @@ export default function SpeedometerScreen() {
   const [speedData, setSpeedData] = useState<number[]>([]);
   const [isRiding, setIsRiding] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [path, setPath] = useState<RideRecord['path']>([]);
+  const [path, setPath] = useState<Array<{latitude: number, longitude: number, timestamp: number}>>([]);
   const [weatherInfo, setWeatherInfo] = useState<RideRecord['weather']>({
     temp: 0,
     condition: '未知',
     humidity: 0,
     windSpeed: 0
   });
+  const [maxSpeed, setMaxSpeed] = useState(0);
+  const [totalDistance, setTotalDistance] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [pauseTime, setPauseTime] = useState(0);
 
-  const subscriptionRef = useRef<Location.LocationSubscription | null>(null);
   const isMountedRef = useRef(true);
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const subscriptionRef = useRef<Location.LocationSubscription | null>(null);
+  const abortControllerRef = useRef<AbortController>();
+  let lastPosition: Location.LocationObject | null = null;
 
   // 实时定位监听
   useEffect(() => {
-    isMountedRef.current = true;
-    
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
     const startTracking = async () => {
       try {
+        // 检查中止信号
+        if (abortController.signal.aborted) return;
+
         const { status } = await Location.requestForegroundPermissionsAsync();
-        if (!isMountedRef.current || status !== 'granted') return;
+        if (abortController.signal.aborted) return;
 
-        subscriptionRef.current = await Location.watchPositionAsync(
-          { accuracy: Location.Accuracy.High },
-          location => {
-            if (!isMountedRef.current) return;
-            const newSpeed = location.coords.speed ? location.coords.speed * 3.6 : 0;
-            setSpeed(Math.round(newSpeed * 10) / 10);
-            setSpeedData(prev => [...prev.slice(-29), newSpeed]); // 保留最近30个数据点
-            
-            if (location) {
-              const dist = calculateDistance(location, location);
-              setDistance(prev => prev + dist / 1000);
-            }
-            setPath(prev => [...prev, {
-              latitude: location.coords.latitude,
-              longitude: location.coords.longitude,
-              timestamp: Date.now()
-            }]);
-
-            if (path.length === 0) { // 首次定位时获取天气
-              fetchWeather(location.coords.latitude, location.coords.longitude);
-            }
+        // 清理旧订阅
+        subscriptionRef.current?.remove();
+        
+        const subscription = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.High,
+            distanceInterval: 10
           },
-          error => handleLocationError(error)
-        );
+          location => {
+            // 定位成功回调
+          }
+        ).catch(error => {
+          console.error('定位错误:', error);
+          return null; // 返回null保持类型一致
+        });
+        
+        if (subscription) {
+          subscriptionRef.current = subscription;
+        }
+
       } catch (error) {
-        console.error('定位服务异常:', error);
+        if (!abortController.signal.aborted) {
+          console.error('启动定位失败:', error);
+        }
       }
     };
 
-    startTracking();
-    
+    if (isRiding) {
+      startTracking();
+    }
+
     return () => {
-      isMountedRef.current = false;
-      if (subscriptionRef.current) {
-        if (typeof subscriptionRef.current.remove === 'function') {
-          subscriptionRef.current.remove();
-        }
-        subscriptionRef.current = null;
-      }
+      // 中止所有异步操作
+      abortController.abort();
+      // 清理订阅
+      subscriptionRef.current?.remove();
+      subscriptionRef.current = null;
     };
-  }, []);
+  }, [isRiding]);
 
   // 时间计数器
   useEffect(() => {
-    const timer = setInterval(() => setTime(prev => prev + 1), 1000);
+    let timer: NodeJS.Timeout;
+    if (isRiding && !isPaused) {
+      timer = setInterval(() => setTime(prev => prev + 1), 1000);
+    }
     return () => clearInterval(timer);
-  }, []);
-
-  // 计算两点间距离
-  const calculateDistance = (prev: Location.LocationObject, current: Location.LocationObject) => {
-    const R = 6371e3;
-    const φ1 = prev.coords.latitude * Math.PI/180;
-    const φ2 = current.coords.latitude * Math.PI/180;
-    const Δφ = (current.coords.latitude - prev.coords.latitude) * Math.PI/180;
-    const Δλ = (current.coords.longitude - prev.coords.longitude) * Math.PI/180;
-
-    const a = Math.sin(Δφ/2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) ** 2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  };
+  }, [isRiding, isPaused]);
 
   // 时间格式化
   const formatTime = (seconds: number) => {
@@ -112,31 +118,32 @@ export default function SpeedometerScreen() {
     setTimeout(() => setRefreshing(false), 1000);
   };
 
-  const handleLocationError = (error: Error) => {
-    console.error('定位错误:', error);
-    Alert.alert(
-      '定位服务异常',
-      '无法获取位置信息，请检查设备定位设置',
-      [{ text: '确定', onPress: () => subscriptionRef.current?.remove() }]
-    );
-  };
-
   // 停止骑行时保存记录
   const handleStopRiding = async () => {
+    // 注释掉数据保存部分
+    /*
     const record: RideRecord = {
       id: Date.now().toString(),
       date: new Date().toISOString(),
-      duration: time,
-      distance: Number(distance.toFixed(2)),
-      avgSpeed: Number((distance / (time / 3600)).toFixed(1)) || 0,
-      maxSpeed: Number(Math.max(...speedData).toFixed(1)),
+      duration: actualDuration,
+      distance: totalDistance,
+      avgSpeed: totalDistance / (actualDuration / 3600),
+      maxSpeed: Number(maxSpeed.toFixed(1)),
       path,
       weather: weatherInfo
     };
-    
     await saveRideRecord(record);
+    */
+    
+    // 保留状态重置
     setPath([]);
     setWeatherInfo({ temp: 0, condition: '未知', humidity: 0, windSpeed: 0 });
+    setIsRiding(false);
+    setIsPaused(false);
+    setPauseTime(0);
+    
+    // 导航到记录界面
+    navigation.navigate('Records');
   };
 
   const fetchWeather = async (lat: number, lon: number) => {
@@ -156,6 +163,19 @@ export default function SpeedometerScreen() {
     }
   };
 
+  const handleRideControl = () => {
+    if (isRiding) {
+      handleStopRiding();
+    } else {
+      // 重置数据
+      setTime(0);
+      setTotalDistance(0);
+      setMaxSpeed(0);
+      setPath([]);
+      setIsRiding(true);
+    }
+  };
+
   return (
     <ScrollView
       contentContainerStyle={styles.container}
@@ -169,21 +189,81 @@ export default function SpeedometerScreen() {
       }
     >
       <LinearGradient colors={['#f7f9fc', '#e3f2fd']} style={styles.gradient}>
+        {/* 骑行状态指示器 */}
+        <View style={styles.statusIndicator}>
+          <View style={[styles.statusDot, {backgroundColor: isRiding ? '#4CAF50' : '#F44336'}]} />
+          <Text style={styles.statusText}>{isRiding ? '骑行中' : '已停止'}</Text>
+        </View>
+
         {/* 主速度仪表盘 */}
-        <Card containerStyle={styles.mainCard}>
+        <Card containerStyle={styles.speedCard}>
           <Text style={styles.speedValue}>{speed.toFixed(1)}</Text>
           <Text style={styles.speedUnit}>km/h</Text>
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Icon name="clock" type="material-community" color="#666" size={20} />
-              <Text style={styles.statValue}>{formatTime(time)}</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Icon name="map-marker-distance" type="material-community" color="#666" size={20} />
-              <Text style={styles.statValue}>{distance.toFixed(2)} km</Text>
-            </View>
+          <View style={styles.speedStats}>
+            <Text style={styles.statusText}>最大 {maxSpeed.toFixed(1)}</Text>
+            <Text style={styles.statusText}>平均 {(totalDistance/(time/3600)).toFixed(1)}</Text>
           </View>
         </Card>
+
+        {/* 控制按钮容器 */}
+        <Card containerStyle={[styles.chartCard, { overflow: 'hidden' }]}>
+          <View style={styles.controlContainer}>
+          <View style={styles.controlRow}>
+            <TouchableOpacity
+              style={[styles.secondaryButton, { marginRight: 16 }]}
+              onPress={() => {
+                setIsPaused(!isPaused);
+                if (isPaused) {
+                  setPauseTime(prev => prev + (Date.now() - pauseTime));
+                } else {
+                  setPauseTime(Date.now());
+                }
+              }}
+              disabled={!isRiding}
+            >
+              <MaterialCommunityIcons 
+                name={isPaused ? "play-circle" : "pause-circle"} 
+                size={36} 
+                color="white" 
+              />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.controlButton, isRiding ? styles.stopButton : styles.startButton]}
+              onPress={handleRideControl}
+            >
+              <MaterialCommunityIcons 
+                name={isRiding ? "stop-circle" : "play-circle"} 
+                size={48} 
+                color="white" 
+              />
+            </TouchableOpacity>
+          </View>
+          </View>
+        </Card>
+
+        {/* 数据统计行（2个卡片） */}
+        <View style={styles.dataGrid}>
+          <Card containerStyle={styles.dataCard}>
+            <Text style={styles.dataLabel}>骑行距离</Text>
+            <View style={styles.distanceContainer}>
+              <Text style={styles.distanceValue}>{(totalDistance/1000).toFixed(2)}</Text>
+              <Text style={styles.distanceUnit}>km</Text>
+              <Text style={styles.distanceSubValue}>（{(totalDistance).toFixed(0)} 米）</Text>
+            </View>
+          </Card>
+
+          <Card containerStyle={styles.dataCard}>
+            <Text style={styles.dataLabel}>骑行时间</Text>
+            <View style={styles.timeContainer}>
+              <Text style={styles.timeValue}>{formatTime(time).split(':')[0]}</Text>
+              <Text style={styles.timeUnit}>h</Text>
+              <Text style={styles.timeValue}>{formatTime(time).split(':')[1]}</Text>
+              <Text style={styles.timeUnit}>m</Text>
+              <Text style={styles.timeValue}>{formatTime(time).split(':')[2]}</Text>
+              <Text style={styles.timeUnit}>s</Text>
+            </View>
+          </Card>
+        </View>
 
         {/* 实时速度曲线 */}
         <Card containerStyle={[styles.chartCard, { overflow: 'hidden' }]}>
@@ -201,8 +281,8 @@ export default function SpeedometerScreen() {
                 backgroundGradientFrom: theme.colors.white,
                 backgroundGradientTo: theme.colors.white,
                 decimalPlaces: 0,
-                color: () => theme.colors.primary,
-                labelColor: () => '#666',
+                color: (opacity = 1) => theme.colors.primary as string,
+                labelColor: (opacity = 1) => '#666',
               }}
               bezier
               withDots={false}
@@ -212,55 +292,46 @@ export default function SpeedometerScreen() {
           </View>
         </Card>
 
-        {/* 运动数据概览 */}
+        {/* 运动数据概览（4个卡片） */}
         <View style={styles.dataGrid}>
           <Card containerStyle={styles.dataCard}>
             <Icon name="speedometer" type="material-community" size={24} color="#4CAF50" />
-            <Text style={styles.dataValue}>{(distance/time*3.6).toFixed(1) || 0}</Text>
+            <View style={styles.metricContainer}>
+              <Text style={styles.dataValue}>{(totalDistance/time*3.6).toFixed(1) || 0}</Text>
+              <Text style={styles.dataUnit}>km/h</Text>
+            </View>
             <Text style={styles.dataLabel}>平均速度</Text>
           </Card>
+
           <Card containerStyle={styles.dataCard}>
             <Icon name="arrow-up" type="material-community" size={24} color="#FF9800" />
-            <Text style={styles.dataValue}>{Math.max(...speedData).toFixed(1)}</Text>
+            <View style={styles.metricContainer}>
+              <Text style={styles.dataValue}>{maxSpeed.toFixed(1)}</Text>
+              <Text style={styles.dataUnit}>km/h</Text>
+            </View>
             <Text style={styles.dataLabel}>最高速度</Text>
           </Card>
+
           <Card containerStyle={styles.dataCard}>
             <Icon name="altimeter" type="material-community" size={24} color="#2196F3" />
-            <Text style={styles.dataValue}>--</Text>
+            <View style={styles.metricContainer}>
+              <Text style={styles.dataValue}>--</Text>
+              <Text style={styles.dataUnit}>米</Text>
+            </View>
             <Text style={styles.dataLabel}>当前海拔</Text>
           </Card>
+
           <Card containerStyle={styles.dataCard}>
             <Icon name="fire" type="material-community" size={24} color="#E91E63" />
-            <Text style={styles.dataValue}>{(distance * 60).toFixed(0)}</Text>
+            <View style={styles.metricContainer}>
+              <Text style={styles.dataValue}>{(totalDistance * 60).toFixed(0)}</Text>
+              <Text style={styles.dataUnit}>kcal</Text>
+            </View>
             <Text style={styles.dataLabel}>卡路里</Text>
           </Card>
         </View>
 
-        <View style={styles.controlButtons}>
-          <TouchableOpacity 
-            style={[styles.button, isRiding ? styles.stopButton : styles.startButton]}
-            onPress={() => {
-              if (isRiding) {
-                handleStopRiding();
-              }
-              setIsRiding(!isRiding);
-              if (!isRiding) {
-                setTime(0);
-                setDistance(0);
-                setSpeedData([]);
-              }
-            }}
-          >
-            <Icon 
-              name={isRiding ? "pause" : "play-arrow"} 
-              size={28} 
-              color="white" 
-            />
-            <Text style={styles.buttonText}>
-              {isRiding ? "暂停骑行" : "开始骑行"}
-            </Text>
-          </TouchableOpacity>
-        </View>
+
       </LinearGradient>
     </ScrollView>
   );
@@ -275,41 +346,101 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingBottom: 24
   },
-  mainCard: {
+  statusIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16
+  },
+  statusDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 8
+  },
+  statusText: {
+    color: '#666',
+    fontSize: 14
+  },
+  speedCard: {
     borderRadius: 24,
-    padding: 24,
-    backgroundColor: theme.colors.white,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
+    padding: 32,
     alignItems: 'center'
   },
   speedValue: {
     fontSize: 64,
     fontWeight: '300',
-    color: theme.colors.primary,
-    marginTop: 16
+    color: theme.colors.primary
   },
   speedUnit: {
-    fontSize: 20,
+    fontSize: 24,
     color: '#666',
-    marginBottom: 24
+    marginTop: -8
   },
-  statsRow: {
+  speedStats: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
     marginTop: 16
   },
-  statItem: {
+  controlContainer: {
     alignItems: 'center',
-    flex: 1
+    marginVertical: 24
   },
-  statValue: {
-    fontSize: 16,
-    color: '#333',
-    marginTop: 8
+  controlRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  controlButton: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  startButton: {
+    backgroundColor: '#4CAF50'
+  },
+  stopButton: {
+    backgroundColor: '#F44336'
+  },
+  secondaryButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FF9800',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  dataGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    marginTop: 16,
+    gap: 12
+  },
+  dataCard: {
+    flex: 1,
+    minWidth: 100,
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: '#f8f9fa',
+    alignItems: 'center'
+  },
+  dataLabel: {
+    color: '#666',
+    fontSize: 12,
+    marginBottom: 8
+  },
+  dataValue: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: theme.colors.primary
+  },
+  dataUnit: {
+    fontSize: 12,
+    color: '#999',
+    marginLeft: 4
   },
   chartCard: {
     borderRadius: 24,
@@ -332,56 +463,42 @@ const styles = StyleSheet.create({
   chart: {
     borderRadius: 16
   },
-  dataGrid: {
+  timeContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginTop: 16
+    alignItems: 'baseline',
+    marginTop: 8
   },
-  dataCard: {
-    width: '48%',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
+  timeValue: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: theme.colors.primary,
+    marginHorizontal: 2
+  },
+  timeUnit: {
+    fontSize: 12,
+    color: '#999',
+    marginRight: 8
+  },
+  distanceContainer: {
     alignItems: 'center'
   },
-  dataValue: {
-    fontSize: 24,
-    fontWeight: '500',
-    color: '#333',
-    marginVertical: 8
+  distanceValue: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: theme.colors.primary
   },
-  dataLabel: {
+  distanceUnit: {
+    fontSize: 12,
+    color: '#999'
+  },
+  distanceSubValue: {
+    fontSize: 12,
     color: '#666',
-    fontSize: 14
+    marginTop: 4
   },
-  controlButtons: {
-    marginTop: 24,
-    paddingHorizontal: 24
-  },
-  button: {
+  metricContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 30,
-    backgroundColor: theme.colors.primary,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4
-  },
-  startButton: {
-    backgroundColor: '#4CAF50',
-  },
-  stopButton: {
-    backgroundColor: '#F44336',
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 18,
-    marginLeft: 8,
-    fontWeight: '500'
+    alignItems: 'baseline',
+    marginVertical: 4
   }
 }); 

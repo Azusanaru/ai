@@ -15,6 +15,13 @@ declare module '@rneui/themed' {
 }
 
 export const theme = createTheme({
+  colors: {
+    primary: '#2196F3',
+    secondary: '#4CAF50',
+    background: '#f5f5f5',
+    white: '#ffffff',
+    divider: '#e0e0e0',
+  },
   components: {
     Button: {
       buttonStyle: {
@@ -42,12 +49,5 @@ export const theme = createTheme({
         paddingVertical: 12,
       },
     },
-  },
-  colors: {
-    primary: '#2196F3',
-    secondary: '#4CAF50',
-    background: '#f5f5f5',
-    white: '#ffffff',
-    divider: '#e0e0e0',
   },
 }); 

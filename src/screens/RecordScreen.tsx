@@ -1,33 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { View, FlatList, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
 import { ListItem, Text, Avatar, Icon, Card } from '@rneui/themed';
-import MapView, { Polyline } from 'react-native-maps';
+import MapView from '../components/MapView';
 import { getRideRecords } from '../services/RecordStorage';
 import { RideRecord } from '../types/RideRecord';
 import { formatDuration, getWeatherIcon } from '../utils/format';
 import { theme } from '../theme/theme';
+import { useIsFocused } from '@react-navigation/native';
 
 export default function RecordScreen() {
   const [records, setRecords] = useState<RideRecord[]>([]);
   const [selectedRecord, setSelectedRecord] = useState<RideRecord | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     const loadRecords = async () => {
       try {
         const storedRecords = await getRideRecords();
-        setRecords(storedRecords.reverse());
-        if (storedRecords.length > 0) {
-          setSelectedRecord(storedRecords[0]);
-        }
+        const validRecords = storedRecords.filter(record => 
+          record.distance !== null &&
+          record.maxSpeed !== null &&
+          record.weather?.temp !== null
+        );
+        
+        setRecords(validRecords.reverse());
+        setSelectedRecord(validRecords[0] || null);
       } catch (error) {
         console.error('加载记录失败:', error);
       } finally {
         setIsLoading(false);
       }
     };
-    loadRecords();
-  }, []);
+
+    if (isFocused) {
+      loadRecords();
+    }
+  }, [isFocused]);
 
   return (
     <View style={styles.container}>
@@ -107,21 +116,7 @@ export default function RecordScreen() {
 
                   {/* 地图展示 */}
                   <View style={styles.mapContainer}>
-                    <MapView
-                      style={styles.map}
-                      initialRegion={{
-                        latitude: selectedRecord.path[0]?.latitude || 0,
-                        longitude: selectedRecord.path[0]?.longitude || 0,
-                        latitudeDelta: 0.0922,
-                        longitudeDelta: 0.0421,
-                      }}
-                    >
-                      <Polyline
-                        coordinates={selectedRecord.path}
-                        strokeColor={theme.colors.primary}
-                        strokeWidth={4}
-                      />
-                    </MapView>
+                    <MapView path={selectedRecord.path} />
                   </View>
 
                   {/* 数据统计 */}
@@ -129,22 +124,30 @@ export default function RecordScreen() {
                     <View style={styles.dataItem}>
                       <Icon name="clock" type="material-community" size={20} color="#666" />
                       <Text style={styles.dataLabel}>骑行时长</Text>
-                      <Text style={styles.dataValue}>{formatDuration(selectedRecord.duration)}</Text>
+                      <Text style={styles.dataValue}>
+                        {selectedRecord?.duration ? formatDuration(selectedRecord.duration) : '--'}
+                      </Text>
                     </View>
                     <View style={styles.dataItem}>
                       <Icon name="map-marker-distance" type="material-community" size={20} color="#666" />
                       <Text style={styles.dataLabel}>总距离</Text>
-                      <Text style={styles.dataValue}>{selectedRecord.distance.toFixed(2)} km</Text>
+                      <Text style={styles.dataValue}>
+                        {selectedRecord?.distance?.toFixed(2) ?? '--'} km
+                      </Text>
                     </View>
                     <View style={styles.dataItem}>
                       <Icon name="speedometer" type="material-community" size={20} color="#666" />
                       <Text style={styles.dataLabel}>最高速度</Text>
-                      <Text style={styles.dataValue}>{selectedRecord.maxSpeed.toFixed(1)} km/h</Text>
+                      <Text style={styles.dataValue}>
+                        {selectedRecord?.maxSpeed?.toFixed(1) ?? '--'} km/h
+                      </Text>
                     </View>
                     <View style={styles.dataItem}>
                       <Icon name="thermometer" type="material-community" size={20} color="#666" />
                       <Text style={styles.dataLabel}>平均温度</Text>
-                      <Text style={styles.dataValue}>{selectedRecord.weather.temp}°C</Text>
+                      <Text style={styles.dataValue}>
+                        {selectedRecord?.weather?.temp ?? '--'}°C
+                      </Text>
                     </View>
                   </View>
                 </Card>
@@ -229,10 +232,10 @@ const styles = StyleSheet.create({
     fontWeight: '600'
   },
   mapContainer: {
-    height: 200,
-    borderRadius: 12,
+    height: 300,
+    borderRadius: 16,
     overflow: 'hidden',
-    marginBottom: 16
+    marginVertical: 16
   },
   map: {
     ...StyleSheet.absoluteFillObject
