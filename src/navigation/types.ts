@@ -5,6 +5,6 @@ export type RootStackParamList = {
   Map: undefined;
   Weather: undefined;
   Chat: undefined;
-  RecordDetail: { record: RideRecord };
+  RecordDetail: { record: any };
   // 其他页面...
 }; 

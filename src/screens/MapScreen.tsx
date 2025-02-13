@@ -1,11 +1,12 @@
-import React, { useState, useEffect, FC } from 'react';
-import { Polyline } from 'react-native-maps';
+import React, { useState, useEffect, FC, useRef } from 'react';
 import * as Location from 'expo-location';
-import MapView, { PROVIDER_GOOGLE,  } from 'react-native-maps';
-import { StyleSheet, View, Pressable, Platform } from 'react-native';
+import { StyleSheet, View} from 'react-native';
 import { Icon } from '@rneui/themed';
 import { Overlay } from '@rneui/themed';
 import { theme } from '../theme/theme';
+import { GoogleNavigation } from '../services/NavigationService';
+import NavigationMap from '../components/AdvancedMap';
+import { Button } from '@rneui/themed';
 
 type Region = {
   latitude: number;
@@ -24,6 +25,8 @@ const MapScreen: MapScreenType = () => {
     longitudeDelta: 0.0421
   });
   const [polylineCoords, setPolylineCoords] = useState<{ latitude: number; longitude: number }[]>([]);
+  const [routes, setRoutes] = useState<google.maps.DirectionsRoute[]>([]);
+  const navigationService = useRef(new GoogleNavigation());
 
   useEffect(() => {
     let isMounted = true;
@@ -33,7 +36,17 @@ const MapScreen: MapScreenType = () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (!isMounted) return;
       
-      // ...其他逻辑...
+      // 初始化导航服务
+      await navigationService.current.planRoute(
+        { lat: 31.2304, lng: 121.4737 },
+        { lat: 31.2222, lng: 121.4812 },
+        {
+          maxSlope: 0.1,
+          preferredDistance: 5000,
+          historicalRoutes: []
+        }
+      );
+
       subscription = await Location.watchPositionAsync(
         { accuracy: Location.Accuracy.High },
         (location) => {
@@ -57,14 +70,13 @@ const MapScreen: MapScreenType = () => {
 
   return (
     <View style={styles.container}>
-      <MapView style={styles.map} provider={PROVIDER_GOOGLE} region={region} showsUserLocation>
-        <Polyline
-          coordinates={polylineCoords}
-          strokeColor="#2196F3"
-          strokeWidth={6}
-        />
-      </MapView>
+      <NavigationMap path={polylineCoords.map(coord => ({ lat: coord.latitude, lng: coord.longitude }))} />
       <MapControls />
+      <Button
+        title="开始导航"
+        containerStyle={styles.navButton}
+        onPress={() => {/* 导航逻辑 */}}
+      />
     </View>
   );
 };
@@ -74,13 +86,13 @@ const MapControls = () => (
     <Icon
       name="my-location"
       type="material"
-      color={theme.colors.primary}
+      color={theme.colors?.primary || '#007AFF'}
       containerStyle={styles.controlIcon}
     />
     <Icon
       name="layers"
       type="material"
-      color={theme.colors.primary}
+      color={theme.colors?.primary || '#007AFF'}
       containerStyle={styles.controlIcon}
     />
   </Overlay>
@@ -107,6 +119,12 @@ const styles = StyleSheet.create({
   },
   controlIcon: {
     margin: 10
+  },
+  navButton: {
+    position: 'absolute',
+    bottom: 30,
+    alignSelf: 'center',
+    width: '80%'
   }
 });
 

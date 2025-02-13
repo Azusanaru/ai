@@ -5,12 +5,18 @@
     "jsx": "react-native",
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ],
+      "@/*": ["./src/*"],
       "@screens/*": ["src/screens/*"],
-      "@theme/*": ["src/theme/*"]
-    }
+      "@theme/*": ["src/theme/*"],
+      "*.json": ["*"],
+      "@components/*": ["./src/components/*"],
+      "@hooks/*": ["./src/hooks/*"]
+    },
+    "types": [
+      "@types/webpack-env"
+    ],
+    "module": "esnext",
+    "moduleResolution": "node"
   },
   "include": [
     "**/*.ts",

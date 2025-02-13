@@ -5,8 +5,8 @@ import { router } from 'expo-router';
 export default function NotFoundScreen() {
   return (
     <View style={styles.container}>
-      <Text h1 style={styles.title}>404</Text>
-      <Text h4 style={styles.subtitle}>您访问的页面不存在</Text>
+      <Text style={styles.h1}>404</Text>
+      <Text style={styles.h4}>您访问的页面不存在</Text>
       <Button
         title="返回首页"
         onPress={() => router.replace('/(tabs)')}
@@ -26,17 +26,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
     padding: 20
   },
-  title: {
-    color: '#dc3545',
-    marginBottom: 10,
-    fontSize: 48,
-    fontWeight: 'bold'
-  },
-  subtitle: {
-    color: '#6c757d',
-    marginBottom: 30,
-    fontSize: 20
-  },
+  h1: { fontSize: 24, fontWeight: 'bold' },
+  h4: { fontSize: 16 },
   button: {
     backgroundColor: '#2196F3',
     borderRadius: 25,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Dimensions, ViewStyle } from 'react-native';
 import { Card, ListItem, Avatar } from '@rneui/themed';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
@@ -94,7 +94,7 @@ const WeatherScreen = () => {
               labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
             }}
             bezier
-            style={[styles.chart, { marginHorizontal: 16 }]}
+            style={[styles.chart as ViewStyle, { marginHorizontal: 16 }]}
             withDots={false}
             withInnerLines={false}
           />
@@ -286,6 +286,10 @@ const styles = StyleSheet.create({
     marginVertical: 16,
     borderRadius: 12,
     alignSelf: 'center'
+  },
+  h1: {
+    fontSize: 24,
+    fontWeight: 'bold'
   }
 });
 
