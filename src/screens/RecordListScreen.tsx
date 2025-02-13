@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, StyleSheet } from 'react-native';
+import { View, FlatList, StyleSheet, Alert } from 'react-native';
 import { ListItem, Text, Avatar, Icon } from '@rneui/themed';
 import { getRideRecords } from '../services/RecordStorage';
 import { RideRecord } from '../types/RideRecord';

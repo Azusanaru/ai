@@ -25,4 +25,16 @@ export const getRideRecords = async (): Promise<RideRecord[]> => {
 
 export const clearRideRecords = async () => {
   await AsyncStorage.removeItem(STORAGE_KEY);
+};
+
+export const deleteRideRecord = async (id: string): Promise<boolean> => {
+  try {
+    const records = await getRideRecords();
+    const updatedRecords = records.filter(record => record.id !== id);
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedRecords));
+    return true;
+  } catch (error) {
+    console.error('删除记录失败:', error);
+    return false;
+  }
 }; 

@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { View, FlatList, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, FlatList, StyleSheet, Alert, ActivityIndicator, Pressable } from 'react-native';
 import { ListItem, Text, Avatar, Icon, Card } from '@rneui/themed';
 import MapView from '../components/MapView';
-import { getRideRecords } from '../services/RecordStorage';
+import { getRideRecords, deleteRideRecord } from '../services/RecordStorage';
 import { RideRecord } from '../types/RideRecord';
 import { formatDuration, getWeatherIcon } from '../utils/format';
 import { theme } from '../theme/theme';
 import { useIsFocused } from '@react-navigation/native';
+import * as Haptics from 'expo-haptics';
 
 export default function RecordScreen() {
   const [records, setRecords] = useState<RideRecord[]>([]);
@@ -37,6 +38,41 @@ export default function RecordScreen() {
       loadRecords();
     }
   }, [isFocused]);
+
+  const handleDelete = useCallback(() => {
+    if (!selectedRecord) {
+      Alert.alert('错误', '未选择有效记录');
+      return;
+    }
+
+    Alert.alert(
+      '删除记录',
+      `确定要删除 ${new Date(selectedRecord.date).toLocaleDateString()} 的记录吗？`,
+      [
+        { text: '取消', style: 'cancel' },
+        {
+          text: '删除',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              const success = await deleteRideRecord(selectedRecord.id);
+              if (success) {
+                // 更新记录列表
+                setRecords(prev => prev.filter(r => r.id !== selectedRecord.id));
+                // 关闭详情面板
+                setSelectedRecord(null);
+                // 显示成功提示
+                Alert.alert('成功', '记录已删除');
+              }
+            } catch (error) {
+              Alert.alert('错误', '删除失败，请重试');
+            }
+          }
+        }
+      ]
+    );
+  }, [selectedRecord?.id]);
 
   return (
     <View style={styles.container}>
@@ -106,12 +142,28 @@ export default function RecordScreen() {
                 <Card containerStyle={styles.detailCard}>
                   <View style={styles.detailHeader}>
                     <Text h4 style={styles.detailTitle}>骑行详情</Text>
-                    <Icon
-                      name="close"
-                      size={24}
-                      color="#666"
-                      onPress={() => setSelectedRecord(null)}
-                    />
+                    <View style={styles.headerButtons}>
+                      <Pressable
+                        style={({ pressed }) => [
+                          styles.iconButton,
+                          pressed && { opacity: 0.6 }
+                        ]}
+                        onPress={handleDelete}
+                      >
+                        <Icon
+                          name="delete"
+                          type="material"
+                          size={24}
+                          color="#ff4444"
+                        />
+                      </Pressable>
+                      <Icon
+                        name="close"
+                        size={24}
+                        color="#666"
+                        onPress={() => setSelectedRecord(null)}
+                      />
+                    </View>
                   </View>
 
                   {/* 地图展示 */}
@@ -225,11 +277,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16
+    marginBottom: 16,
+    paddingHorizontal: 8
   },
   detailTitle: {
     color: theme.colors.primary,
-    fontWeight: '600'
+    fontWeight: '600',
+    fontSize: 18
   },
   mapContainer: {
     height: 300,
@@ -278,5 +332,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#999',
     marginTop: 8
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12
+  },
+  iconButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#ffeeee',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4
   }
 }); 

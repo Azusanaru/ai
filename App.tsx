@@ -5,6 +5,7 @@ import { theme } from './src/theme/theme';
 import { useFonts } from 'expo-font';
 import ErrorBoundary from './src/components/ErrorBoundary';
 import { LoadScript } from '@react-google-maps/api';
+import 'react-native-gesture-handler';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
