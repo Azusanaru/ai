@@ -5,6 +5,7 @@ import {
   useJsApiLoader 
 } from '@react-google-maps/api';
 import { View, StyleSheet } from 'react-native';
+import { MAP_CONFIG } from '@/config/map';
 
 const MAP_CONTAINER_STYLE = { width: '100%', height: '100%' };
 const CENTER = { lat: 31.2304, lng: 121.4737 };
@@ -23,8 +24,8 @@ export default function NavigationMap({ path }: {
   const mapRef = useRef<GoogleMap>(null);
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: "YOUR_API_KEY",
-    libraries: LIBRARIES
+    googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY!,
+    libraries: MAP_CONFIG.LIBRARIES
   });
 
   useEffect(() => {

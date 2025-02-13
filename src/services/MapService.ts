@@ -54,4 +54,17 @@ export class MapService {
       );
     });
   }
+
+  static async checkMapsAPI() {
+    return new Promise((resolve) => {
+      const check = () => {
+        if (window.google?.maps) {
+          resolve(true);
+        } else {
+          setTimeout(check, 500);
+        }
+      };
+      check();
+    });
+  }
 } 

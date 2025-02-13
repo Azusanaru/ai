@@ -1,12 +1,8 @@
 import { 
-  GoogleMap, 
-  DirectionsService, 
-  DirectionsRenderer,
-  LoadScript 
+  GoogleMap
 } from '@react-google-maps/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import MAP_STYLE from '@/assets/mapStyle.json';
-const LIBRARIES = ['places', 'geometry'];
+import { MAP_CONFIG } from '@/config/map';
 
 type RouteOptimizationParams = {
   maxSlope: number;
@@ -19,21 +15,30 @@ type DirectionsStep = google.maps.DirectionsStep & {
 };
 
 export class GoogleNavigation {
-  private static readonly REQUIRED_LIBRARIES: google.maps.Libraries = ['places', 'geometry'];
+  private static readonly REQUIRED_LIBRARIES = MAP_CONFIG.LIBRARIES;
   
   private mapRef: GoogleMap | null = null;
   private directions: google.maps.DirectionsResult | null = null;
+  private isAPILoaded = false;
 
   constructor() {
+    // 移除立即检查
+  }
+
+  async init() {
     if (!window.google?.maps) {
-      throw new Error('Google Maps API not loaded');
+      throw new Error('Google Maps API未加载');
     }
+    this.isAPILoaded = true;
   }
 
   // 路径规划（带离线缓存）
   async planRoute(origin: google.maps.LatLngLiteral, 
                 destination: google.maps.LatLngLiteral,
                 params: RouteOptimizationParams) {
+    if (!this.isAPILoaded) {
+      await this.init();
+    }
     const cacheKey = `route_${origin.lat},${origin.lng}_${destination.lat},${destination.lng}`;
     
     // 尝试获取缓存

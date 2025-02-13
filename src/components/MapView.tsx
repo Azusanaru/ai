@@ -20,6 +20,7 @@ export default function MapView() {
         defaultCenter: DEFAULT_CENTER,
         libraries: ['places', 'geometry']
       });
+      console.log('Google Maps API状态:', window.google.maps ? '已加载' : '未加载');
     }
   }, [isLoaded]);
 

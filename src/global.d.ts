@@ -21,6 +21,7 @@ declare global {
   interface Window {
     google: {
       maps: {
+        loaded: boolean;
         DirectionsService: {
           new (): {
             route: (
@@ -42,4 +43,12 @@ declare global {
       }
     }
   }
+}
+
+declare module '@/config/map' {
+  export const MAP_CONFIG: {
+    LIBRARIES: google.maps.Libraries;
+    DEFAULT_CENTER: google.maps.LatLngLiteral;
+    ZOOM: number;
+  };
 } 
