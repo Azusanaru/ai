@@ -32,9 +32,8 @@ export default function SpeedometerScreen() {
   const [totalDistance, setTotalDistance] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [pauseTime, setPauseTime] = useState(0);
-
   const isMountedRef = useRef(true);
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation();
   const subscriptionRef = useRef<Location.LocationSubscription | null>(null);
   const abortControllerRef = useRef<AbortController>();
   let lastPosition: Location.LocationObject | null = null;
@@ -141,9 +140,8 @@ export default function SpeedometerScreen() {
     setIsRiding(false);
     setIsPaused(false);
     setPauseTime(0);
-    
     // 导航到记录界面
-    navigation.navigate('Records');
+    navigation.navigate('Records' as never);
   };
 
   const fetchWeather = async (lat: number, lon: number) => {
@@ -183,7 +181,7 @@ export default function SpeedometerScreen() {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={[theme.colors.primary]}
+          colors={[theme.colors?.primary || '#007AFF']}
           progressBackgroundColor="#fff"
         />
       }
@@ -277,11 +275,11 @@ export default function SpeedometerScreen() {
               width={Dimensions.get('window').width - 48}
               height={180}
               chartConfig={{
-                backgroundColor: theme.colors.white,
-                backgroundGradientFrom: theme.colors.white,
-                backgroundGradientTo: theme.colors.white,
+                backgroundColor: '#fff',
+                backgroundGradientFrom: '#fff',
+                backgroundGradientTo: '#fff',
                 decimalPlaces: 0,
-                color: (opacity = 1) => theme.colors.primary as string,
+                color: (opacity = 1) => '#000',
                 labelColor: (opacity = 1) => '#666',
               }}
               bezier
@@ -369,7 +367,7 @@ const styles = StyleSheet.create({
   speedValue: {
     fontSize: 64,
     fontWeight: '300',
-    color: theme.colors.primary
+    color: '#E91E63'
   },
   speedUnit: {
     fontSize: 24,
@@ -435,7 +433,7 @@ const styles = StyleSheet.create({
   dataValue: {
     fontSize: 20,
     fontWeight: '600',
-    color: theme.colors.primary
+    color: '#000'
   },
   dataUnit: {
     fontSize: 12,
@@ -471,7 +469,7 @@ const styles = StyleSheet.create({
   timeValue: {
     fontSize: 20,
     fontWeight: '600',
-    color: theme.colors.primary,
+    color: '#000',
     marginHorizontal: 2
   },
   timeUnit: {
@@ -485,7 +483,7 @@ const styles = StyleSheet.create({
   distanceValue: {
     fontSize: 20,
     fontWeight: '600',
-    color: theme.colors.primary
+    color: '#000'
   },
   distanceUnit: {
     fontSize: 12,

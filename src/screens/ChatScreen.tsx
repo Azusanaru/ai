@@ -65,7 +65,7 @@ export default function ChatScreen() {
       {/* 输入区域 */}
       <View style={styles.inputContainer}>
         <TouchableOpacity style={styles.plusButton}>
-          <Ionicons name="add-circle" size={32} color={theme.colors.primary} />
+          <Ionicons name="add-circle" size={32} color={theme.colors?.primary || '#007AFF'} />
         </TouchableOpacity>
 
         <TextInput
@@ -84,7 +84,6 @@ export default function ChatScreen() {
           <MaterialIcons 
             name={message ? "send" : "tag-faces"} 
             size={28} 
-            color={theme.colors.primary} 
           />
         </TouchableOpacity>
       </View>

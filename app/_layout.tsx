@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+
 import { ThemeProvider } from '@rneui/themed';
 import { theme } from '../src/theme/theme';
 import { useRouter } from 'expo-router';

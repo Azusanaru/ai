@@ -51,7 +51,7 @@ export class GoogleNavigation {
           departureTime: new Date(),
           trafficModel: google.maps.TrafficModel.BEST_GUESS
         }
-      }, (result, status) => {
+      }, (result: google.maps.DirectionsResult, status: string) => {
         if (status === 'OK' && result) {
           this.cacheRoute(cacheKey, result);
           resolve(this.optimizeRoutes(result, params));
