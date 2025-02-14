@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, FlatList, StyleSheet, Alert, ActivityIndicator, Pressable } from 'react-native';
 import { ListItem, Text, Avatar, Icon, Card } from '@rneui/themed';
-import MapView from '../components/MapView';
 import { getRideRecords, deleteRideRecord } from '../services/RecordStorage';
 import { RideRecord } from '../types/RideRecord';
 import { formatDuration, getWeatherIcon } from '../utils/format';
@@ -167,14 +166,7 @@ export default function RecordScreen() {
                   </View>
 
                   {/* 地图展示 */}
-                  {/* <View style={styles.mapContainer}>
-                    <MapView 
-                      path={selectedRecord.path.filter(p => 
-                        Number.isFinite(p.lat) && 
-                        Number.isFinite(p.lng)
-                      )}
-                    />
-                  </View> */}
+            
 
                   {/* 数据统计 */}
                   <View style={styles.dataGrid}>

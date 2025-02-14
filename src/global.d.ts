@@ -4,8 +4,6 @@ declare module '*.json' {
 }
 
 declare namespace google.maps {
-  type Libraries = ("places" | "geometry")[];
-  type TravelMode = "DRIVING" | "WALKING" | "BICYCLING" | "TRANSIT";
 }
 
 declare namespace NodeJS {
@@ -49,7 +47,6 @@ declare global {
 
 declare module '@/config/map' {
   export const MAP_CONFIG: {
-    LIBRARIES: google.maps.Libraries;
     DEFAULT_CENTER: google.maps.LatLngLiteral;
     ZOOM: number;
   };
