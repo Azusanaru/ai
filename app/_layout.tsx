@@ -1,5 +1,5 @@
 import { ThemeProvider } from '@rneui/themed';
-import { theme } from '../src/theme/theme';
+import { theme } from '../src/styles/theme';
 import AppNavigator from '../src/navigation/AppNavigator';
 
 export default function RootLayout() {
