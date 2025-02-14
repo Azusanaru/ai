@@ -167,9 +167,9 @@ export default function RecordScreen() {
                   </View>
 
                   {/* 地图展示 */}
-                  <View style={styles.mapContainer}>
+                  {/* <View style={styles.mapContainer}>
                     <MapView path={selectedRecord.path} />
-                  </View>
+                  </View> */}
 
                   {/* 数据统计 */}
                   <View style={styles.dataGrid}>

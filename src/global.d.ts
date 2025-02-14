@@ -51,4 +51,15 @@ declare module '@/config/map' {
     DEFAULT_CENTER: google.maps.LatLngLiteral;
     ZOOM: number;
   };
+}
+
+declare module '@expo/vector-icons' {
+  export interface IconProps {
+    name: 
+      | 'weather-sunny'
+      | 'weather-partly-cloudy'
+      | 'weather-night'
+      | 'weather-snowy'
+      | 'weather-rainy';
+  }
 } 

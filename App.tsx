@@ -21,7 +21,7 @@ export default function App() {
       <ThemeProvider theme={theme}>
         <NavigationContainer>
           <LoadScript
-            googleMapsApiKey="AIzaSyAmjOFytLq1s9O0ckIWEiNu2jLwmetnKks"
+            googleMapsApiKey={process.env.GOOGLE_MAPS_API_KEY!}
             libraries={['places']}
           >
             <AppNavigator />
