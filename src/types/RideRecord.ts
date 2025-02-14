@@ -6,9 +6,8 @@ export interface RideRecord {
   avgSpeed: number; // 平均速度 km/h
   maxSpeed: number; // 最高速度
   path: Array<{
-    latitude: number;
-    longitude: number;
-    timestamp: number;
+    lat: number;
+    lng: number;
   }>;
   weather: {
     temp: number;
@@ -18,11 +17,11 @@ export interface RideRecord {
   };
 }
 
-export function isValidRideRecord(record: any): record is RideRecord {
-  return (
-    typeof record?.distance === 'number' &&
-    typeof record?.maxSpeed === 'number' &&
-    Array.isArray(record?.path) &&
-    record.weather?.temp !== undefined
+export function isValidRecord(record: any): record is RideRecord {
+  return record?.path?.every((p: any) => 
+    typeof p?.lat === 'number' && 
+    typeof p?.lng === 'number' &&
+    Math.abs(p.lat) <= 90 &&
+    Math.abs(p.lng) <= 180
   );
 } 

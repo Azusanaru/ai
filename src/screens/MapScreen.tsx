@@ -5,8 +5,8 @@ import { Icon } from '@rneui/themed';
 import { Overlay } from '@rneui/themed';
 import { theme } from '../theme/theme';
 import { GoogleNavigation } from '../services/NavigationService';
-import NavigationMap from '../components/AdvancedMap';
 import { Button } from '@rneui/themed';
+import useMaps from '../hooks/useMaps';
 
 type Region = {
   latitude: number;
@@ -27,6 +27,7 @@ const MapScreen: MapScreenType = () => {
   const [polylineCoords, setPolylineCoords] = useState<{ latitude: number; longitude: number }[]>([]);
   const [routes, setRoutes] = useState<google.maps.DirectionsRoute[]>([]);
   const navigationService = useRef(new GoogleNavigation());
+  const { isLoaded } = useMaps();
 
   useEffect(() => {
     let isMounted = true;
@@ -37,15 +38,17 @@ const MapScreen: MapScreenType = () => {
       if (!isMounted) return;
       
       // 初始化导航服务
-      await navigationService.current.planRoute(
-        { lat: 31.2304, lng: 121.4737 },
-        { lat: 31.2222, lng: 121.4812 },
-        {
-          maxSlope: 0.1,
-          preferredDistance: 5000,
-          historicalRoutes: []
-        }
-      );
+      if (isLoaded) {
+        await navigationService.current.planRoute(
+          { lat: 31.2304, lng: 121.4737 },
+          { lat: 31.2222, lng: 121.4812 },
+          {
+            maxSlope: 0.1,
+            preferredDistance: 5000,
+            historicalRoutes: []
+          }
+        );
+      }
 
       subscription = await Location.watchPositionAsync(
         { accuracy: Location.Accuracy.High },
@@ -66,7 +69,7 @@ const MapScreen: MapScreenType = () => {
       isMounted = false;
       subscription?.remove();
     };
-  }, []);
+  }, [isLoaded]);
 
   return (
     <View style={styles.container}>

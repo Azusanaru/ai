@@ -66,7 +66,7 @@ const WeatherScreen = () => {
 
         <MaterialCommunityIcons 
           name="weather-sunny" 
-          size={150} 
+          size={48}
           color="rgba(33, 150, 243, 0.1)" 
           style={styles.backgroundIcon}
         />

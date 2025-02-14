@@ -40,6 +40,8 @@ declare global {
           ZERO_RESULTS: string;
         };
         TravelMode: typeof google.maps.TravelMode;
+        Map: new (el: HTMLElement, options: google.maps.MapOptions) => google.maps.Map;
+        LatLngBounds: new () => google.maps.LatLngBounds;
       }
     }
   }

@@ -168,7 +168,12 @@ export default function RecordScreen() {
 
                   {/* 地图展示 */}
                   {/* <View style={styles.mapContainer}>
-                    <MapView path={selectedRecord.path} />
+                    <MapView 
+                      path={selectedRecord.path.filter(p => 
+                        Number.isFinite(p.lat) && 
+                        Number.isFinite(p.lng)
+                      )}
+                    />
                   </View> */}
 
                   {/* 数据统计 */}

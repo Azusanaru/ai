@@ -3,6 +3,7 @@ import {
 } from '@react-google-maps/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MAP_CONFIG } from '@/config/map';
+import { MapService } from '@/services/MapService';
 
 type RouteOptimizationParams = {
   maxSlope: number;
@@ -26,6 +27,7 @@ export class GoogleNavigation {
   }
 
   async init() {
+    await MapService.checkMapsAPI();
     if (!window.google?.maps) {
       throw new Error('Google Maps API未加载');
     }

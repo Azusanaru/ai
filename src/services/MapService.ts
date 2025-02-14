@@ -1,4 +1,5 @@
 import { DirectionsService, DirectionsRenderer } from '@react-google-maps/api';
+import { GOOGLE_MAPS_CONFIG } from '../config/map';
 
 type MapConfig = {
   apiKey: string;
@@ -12,20 +13,24 @@ export class MapService {
   private directionsRenderer: google.maps.DirectionsRenderer;
 
   private constructor(config: MapConfig) {
+    if (!config.apiKey) {
+      throw new Error('API密钥未配置');
+    }
     this.directionsService = new window.google.maps.DirectionsService();
     this.directionsRenderer = new window.google.maps.DirectionsRenderer();
   }
 
-  static init(config: MapConfig) {
-    if (!config.apiKey) {
-      throw new Error('必须提供Google Maps API密钥');
+  static init() {
+    if (!window.google?.maps) {
+      throw new Error('请通过useMaps钩子加载API');
     }
     
     if (!this.instance) {
-      if (!window.google?.maps) {
-        throw new Error('请先加载Google Maps API');
-      }
-      this.instance = new MapService(config);
+      this.instance = new MapService({
+        apiKey: GOOGLE_MAPS_CONFIG.apiKey,
+        defaultCenter: GOOGLE_MAPS_CONFIG.defaultCenter,
+        libraries: GOOGLE_MAPS_CONFIG.libraries
+      });
     }
     return this.instance;
   }
