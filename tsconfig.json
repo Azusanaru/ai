@@ -9,7 +9,8 @@
       "@/*": ["./src/*"]
     },
     "types": [
-      "@types/webpack-env"
+      "@types/webpack-env",
+      "google.maps"
     ],
     "module": "esnext",
     "moduleResolution": "node"

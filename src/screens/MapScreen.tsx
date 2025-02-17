@@ -30,10 +30,12 @@ const defaultCenter = {
 
 const LIBRARIES = ['places'] as const;
 
-const JAPAN_BOUNDS = new google.maps.LatLngBounds(
-  new google.maps.LatLng(30.0, 130.0),
-  new google.maps.LatLng(45.0, 145.0)
-);
+const JAPAN_BOUNDS = typeof window !== 'undefined' && window.google 
+  ? new window.google.maps.LatLngBounds(
+      new window.google.maps.LatLng(30.0, 130.0),
+      new window.google.maps.LatLng(45.0, 145.0)
+    )
+  : null;
 
 const MapScreen = () => {
   const [map, setMap] = useState<google.maps.Map>();
@@ -241,8 +243,10 @@ const MapScreen = () => {
             <Autocomplete
               onLoad={autocomplete => {
                 autocompleteRef.current = autocomplete;
-                autocomplete.setBounds(JAPAN_BOUNDS);
-                autocomplete.setComponentRestrictions({ country: 'jp' });
+                if (window.google && JAPAN_BOUNDS) {
+                  autocomplete.setBounds(JAPAN_BOUNDS);
+                  autocomplete.setComponentRestrictions({ country: 'jp' });
+                }
               }}
               options={{
                 types: ['geocode', 'establishment'],
