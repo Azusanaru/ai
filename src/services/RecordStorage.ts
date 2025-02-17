@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RideRecord } from '../types/RideRecord';
+import { v4 as uuidv4 } from 'uuid';
 
 const STORAGE_KEY = '@rideRecords';
 
@@ -37,4 +38,15 @@ export const deleteRideRecord = async (id: string): Promise<boolean> => {
     console.error('删除记录失败:', error);
     return false;
   }
-}; 
+};
+
+// 添加类型守卫
+const validateRecord = (record: any): record is RideRecord => {
+  return (
+    typeof record?.id === 'string' &&
+    Array.isArray(record?.path) &&
+    typeof record?.weather?.temp === 'number'
+  );
+};
+
+// 示例记录，实际使用时需要删除或调用 

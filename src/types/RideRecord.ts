@@ -1,6 +1,9 @@
 export interface RideRecord {
   id: string;
   date: string;
+  name: string;
+  description: string;
+  value: number;
   duration: number; // 单位：秒
   distance: number; // 单位：公里
   avgSpeed: number; // 平均速度 km/h
@@ -8,6 +11,7 @@ export interface RideRecord {
   path: Array<{
     lat: number;
     lng: number;
+    timestamp: number;
   }>;
   weather: {
     temp: number;

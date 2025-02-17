@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { View, FlatList, StyleSheet, Alert } from 'react-native';
-import { ListItem, Text, Avatar, Icon } from '@rneui/themed';
 import { getRideRecords } from '../services/RecordStorage';
 import { RideRecord } from '../types/RideRecord';
 import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
+import { Text, Avatar, Icon, List } from 'react-native-paper';
+import { getWeatherIcon } from '../types/weather';
 
 export default function RecordListScreen() {
   const [records, setRecords] = useState<RideRecord[]>([]);
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   useEffect(() => {
     const loadRecords = async () => {
@@ -25,34 +26,20 @@ export default function RecordListScreen() {
         data={records}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
-          <ListItem bottomDivider onPress={() => navigation.navigate('RecordDetail', { record: item })}>
-            <Avatar
-              source={{ uri: `https://openweathermap.org/img/wn/${getWeatherIcon(item.weather.condition)}.png` }}
-              size="medium"
-              containerStyle={styles.weatherIcon}
-            />
-            <ListItem.Content>
-              <View style={styles.listHeader}>
-                <Text style={styles.date}>{new Date(item.date).toLocaleDateString()}</Text>
-                <Text style={styles.duration}>{formatDuration(item.duration)}</Text>
-              </View>
-              <View style={styles.statsRow}>
-                <View style={styles.statItem}>
-                  <Icon name="map-marker-distance" type="material-community" size={16} color="#666" />
-                  <Text style={styles.statText}>{item.distance.toFixed(2)} km</Text>
-                </View>
-                <View style={styles.statItem}>
-                  <Icon name="speedometer" type="material-community" size={16} color="#666" />
-                  <Text style={styles.statText}>{item.avgSpeed.toFixed(1)} km/h</Text>
-                </View>
-                <View style={styles.statItem}>
-                  <Icon name="thermometer" type="material-community" size={16} color="#666" />
-                  <Text style={styles.statText}>{item.weather.temp}°C</Text>
-                </View>
-              </View>
-            </ListItem.Content>
-            <ListItem.Chevron />
-          </ListItem>
+          <List.Item
+            title={new Date(item.date).toLocaleDateString()}
+            description={`距离: ${item.distance.toFixed(2)}km | 均速: ${item.avgSpeed.toFixed(1)}km/h`}
+            left={props => (
+              <Avatar.Image
+                source={{ uri: getWeatherIcon(item.weather.condition) }}
+                size={36}
+                style={styles.weatherIcon}
+              />
+            )}
+            right={props => <List.Icon icon="chevron-right" />}
+            onPress={() => navigation.navigate('RecordDetail', { record: item })}
+            style={styles.listItem}
+          />
         )}
       />
     </View>
@@ -98,5 +85,10 @@ const styles = StyleSheet.create({
   statText: {
     marginLeft: 5,
     fontSize: 14
+  },
+  listItem: {
+    backgroundColor: '#fff',
+    marginVertical: 4,
+    paddingVertical: 12
   }
 }); 

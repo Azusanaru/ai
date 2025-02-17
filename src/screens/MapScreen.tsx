@@ -1,22 +1,9 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { GoogleMap, LoadScript, Autocomplete, DirectionsService, DirectionsRenderer, Marker } from '@react-google-maps/api';
 import { View, StyleSheet, TextInput, Button, Alert } from 'react-native';
-import { FAB } from '@rneui/themed';
+import { FAB } from 'react-native-paper';
 import * as Location from 'expo-location';
-import { Icon, Input } from '@rneui/themed';
 import { theme } from '@/styles/theme';
-import type { Theme } from '@rneui/themed';
-
-declare module '@rneui/themed' {
-  interface Colors {
-    grey2?: string;
-    primary: string;
-    white: string;
-    black: string;
-    secondary?: string;
-    grey1?: string;
-  }
-}
 
 const containerStyle = {
   width: '100%',
@@ -40,16 +27,14 @@ const JAPAN_BOUNDS = typeof window !== 'undefined' && window.google
 const MapScreen = () => {
   const [map, setMap] = useState<google.maps.Map>();
   const [directions, setDirections] = useState<google.maps.DirectionsResult>();
-  const [origin, setOrigin] = useState<google.maps.LatLngLiteral>();
   const [destination, setDestination] = useState<google.maps.LatLngLiteral>();
   const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral>();
   const autocompleteRef = useRef<google.maps.places.Autocomplete>();
   const [searchBounds, setSearchBounds] = useState<google.maps.LatLngBounds>();
   const [searchResult, setSearchResult] = useState<google.maps.places.PlaceResult>();
   const [clickedPosition, setClickedPosition] = useState<google.maps.LatLngLiteral | null>(null);
-  const [clickedMarker, setClickedMarker] = useState<google.maps.Marker | null>(null);
 
-  const safeTheme = theme as Theme;
+  const safeTheme = theme ;
 
   const styles = StyleSheet.create({
     container: {
@@ -184,7 +169,7 @@ const MapScreen = () => {
       } else {
         Alert.alert('搜索失败', '未找到该地点');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('搜索出错:', error);
       Alert.alert('搜索错误', error.message);
     }
@@ -221,7 +206,7 @@ const MapScreen = () => {
     <View style={styles.container}>
       <LoadScript
         googleMapsApiKey="AIzaSyCdIMvnFk7tRGWaBxE_AKBCg_I7PmC-roo"
-        libraries={LIBRARIES}
+        libraries={LIBRARIES as unknown as any[]}
         language="ja"
         region="JP"
         onError={(error) => console.error('地图加载失败:', error)}
@@ -251,33 +236,17 @@ const MapScreen = () => {
               options={{
                 types: ['geocode', 'establishment'],
                 fields: ['geometry', 'name', 'formatted_address'],
-                strictBounds: true,
-                language: 'ja',
-                region: 'jp'
+                strictBounds: true
               }}
               onPlaceChanged={debouncedSearch}
             >
-              <Input
-                containerStyle={styles.searchContainer}
-                inputContainerStyle={styles.inputContainer}
-                leftIcon={{
-                  type: 'material',
-                  name: 'search',
-                  color: safeTheme.colors.grey2 || '#999',
-                  containerStyle: { marginLeft: 8 }
-                }}
-                placeholder="搜索地点、地址"
-                placeholderTextColor={safeTheme.colors.grey2 || '#999'}
-                inputStyle={styles.input}
-                renderErrorMessage={false}
+              <TextInput
+                placeholder="搜索地点"
               />
             </Autocomplete>
             <Button
               title="搜索"
-              buttonStyle={styles.searchButton}
-              titleStyle={styles.searchButtonText}
               onPress={handleSearch}
-              containerStyle={styles.buttonContainer}
             />
           </View>
 
@@ -344,17 +313,11 @@ const MapScreen = () => {
       </LoadScript>
 
       <FAB
-        icon={{ 
-          name: 'my-location', 
-          color: '#4285F4',
-          size: 26,
-          style: { marginTop: 2 }
-        }}
-        color="#fff"
+        icon="map-marker" 
         style={styles.fab}
         onPress={() => {}}
-        size="large"
-        animated={true}
+        color="#4285F4"
+        theme={{ colors: { accent: '#fff' } }}
       />
     </View>
   );

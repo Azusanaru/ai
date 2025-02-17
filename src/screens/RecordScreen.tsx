@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, FlatList, StyleSheet, Alert, ActivityIndicator, Pressable } from 'react-native';
-import { ListItem, Text, Avatar, Icon, Card } from '@rneui/themed';
+import { List } from 'react-native-paper';
 import { getRideRecords, deleteRideRecord } from '../services/RecordStorage';
 import { RideRecord } from '../types/RideRecord';
 import { formatDuration, getWeatherIcon } from '../utils/format';
 import { theme } from '../theme/theme';
 import { useIsFocused } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
+import Icon from '@expo/vector-icons/MaterialCommunityIcons';
+import { Text } from 'react-native';
+import { Card } from 'react-native-paper';
 
 export default function RecordScreen() {
   const [records, setRecords] = useState<RideRecord[]>([]);
@@ -93,115 +96,84 @@ export default function RecordScreen() {
               <Text style={styles.emptySubText}>开始骑行后记录将在此显示</Text>
             </View>
           ) : (
-            <>
-              <FlatList
-                data={records}
-                keyExtractor={item => item.id}
-                contentContainerStyle={styles.listContainer}
-                renderItem={({ item }) => (
-                  <ListItem
-                    containerStyle={[
-                      styles.listItem,
-                      selectedRecord?.id === item.id && styles.selectedItem
+            <FlatList
+              data={records}
+              keyExtractor={item => item.id}
+              contentContainerStyle={styles.listContainer}
+              renderItem={({ item }) => (
+                <List.Item
+                  title={item.name}
+                  description={item.description}
+                  left={props => <List.Icon {...props} icon="bike" />}
+                  right={props => <Text>{item.value}</Text>}
+                />
+              )}
+            />
+          )}
+
+          {/* 详情面板 */}
+          {selectedRecord && (
+            <Card style={styles.detailCard}>
+              <View style={styles.detailHeader}>
+                <Card.Title title="骑行详情" />
+                <View style={styles.headerButtons}>
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.iconButton,
+                      pressed && { opacity: 0.6 }
                     ]}
-                    onPress={() => setSelectedRecord(item)}
+                    onPress={handleDelete}
                   >
-                    <Avatar
-                      source={{ uri: `https://openweathermap.org/img/wn/${getWeatherIcon(item.weather.condition)}.png` }}
-                      size="medium"
-                      containerStyle={styles.weatherIcon}
+                    <Icon
+                      name="delete"
+                      size={24}
+                      color="#ff4444"
                     />
-                    <ListItem.Content>
-                      <View style={styles.listHeader}>
-                        <Text style={styles.date}>{new Date(item.date).toLocaleDateString()}</Text>
-                        <Text style={styles.duration}>{formatDuration(item.duration)}</Text>
-                      </View>
-                      <View style={styles.statsRow}>
-                        <View style={styles.statItem}>
-                          <Icon name="map-marker-distance" type="material-community" size={16} color="#666" />
-                          <Text style={styles.statText}>{item.distance.toFixed(2)} km</Text>
-                        </View>
-                        <View style={styles.statItem}>
-                          <Icon name="speedometer" type="material-community" size={16} color="#666" />
-                          <Text style={styles.statText}>{item.avgSpeed.toFixed(1)} km/h</Text>
-                        </View>
-                      </View>
-                    </ListItem.Content>
-                    <Icon 
-                      name={selectedRecord?.id === item.id ? "chevron-up" : "chevron-down"} 
-                      type="material-community" 
-                      color="#666" 
-                    />
-                  </ListItem>
-                )}
-              />
+                  </Pressable>
+                  <Icon
+                    name="close"
+                    size={24}
+                    color="#666"
+                    onPress={() => setSelectedRecord(null)}
+                  />
+                </View>
+              </View>
 
-              {/* 详情面板 */}
-              {selectedRecord && (
-                <Card containerStyle={styles.detailCard}>
-                  <View style={styles.detailHeader}>
-                    <Text h4 style={styles.detailTitle}>骑行详情</Text>
-                    <View style={styles.headerButtons}>
-                      <Pressable
-                        style={({ pressed }) => [
-                          styles.iconButton,
-                          pressed && { opacity: 0.6 }
-                        ]}
-                        onPress={handleDelete}
-                      >
-                        <Icon
-                          name="delete"
-                          type="material"
-                          size={24}
-                          color="#ff4444"
-                        />
-                      </Pressable>
-                      <Icon
-                        name="close"
-                        size={24}
-                        color="#666"
-                        onPress={() => setSelectedRecord(null)}
-                      />
-                    </View>
-                  </View>
-
-                  {/* 地图展示 */}
+              {/* 地图展示 */}
             
 
-                  {/* 数据统计 */}
-                  <View style={styles.dataGrid}>
-                    <View style={styles.dataItem}>
-                      <Icon name="clock" type="material-community" size={20} color="#666" />
-                      <Text style={styles.dataLabel}>骑行时长</Text>
-                      <Text style={styles.dataValue}>
-                        {selectedRecord?.duration ? formatDuration(selectedRecord.duration) : '--'}
-                      </Text>
-                    </View>
-                    <View style={styles.dataItem}>
-                      <Icon name="map-marker-distance" type="material-community" size={20} color="#666" />
-                      <Text style={styles.dataLabel}>总距离</Text>
-                      <Text style={styles.dataValue}>
-                        {selectedRecord?.distance?.toFixed(2) ?? '--'} km
-                      </Text>
-                    </View>
-                    <View style={styles.dataItem}>
-                      <Icon name="speedometer" type="material-community" size={20} color="#666" />
-                      <Text style={styles.dataLabel}>最高速度</Text>
-                      <Text style={styles.dataValue}>
-                        {selectedRecord?.maxSpeed?.toFixed(1) ?? '--'} km/h
-                      </Text>
-                    </View>
-                    <View style={styles.dataItem}>
-                      <Icon name="thermometer" type="material-community" size={20} color="#666" />
-                      <Text style={styles.dataLabel}>平均温度</Text>
-                      <Text style={styles.dataValue}>
-                        {selectedRecord?.weather?.temp ?? '--'}°C
-                      </Text>
-                    </View>
-                  </View>
-                </Card>
-              )}
-            </>
+              {/* 数据统计 */}
+              <View style={styles.dataGrid}>
+                <View style={styles.dataItem}>
+                  <Icon name="clock" type="material-community" size={20} color="#666" />
+                  <Text style={styles.dataLabel}>骑行时长</Text>
+                  <Text style={styles.dataValue}>
+                    {selectedRecord?.duration ? formatDuration(selectedRecord.duration) : '--'}
+                  </Text>
+                </View>
+                <View style={styles.dataItem}>
+                  <Icon name="map-marker-distance" type="material-community" size={20} color="#666" />
+                  <Text style={styles.dataLabel}>总距离</Text>
+                  <Text style={styles.dataValue}>
+                    {selectedRecord?.distance?.toFixed(2) ?? '--'} km
+                  </Text>
+                </View>
+                <View style={styles.dataItem}>
+                  <Icon name="speedometer" type="material-community" size={20} color="#666" />
+                  <Text style={styles.dataLabel}>最高速度</Text>
+                  <Text style={styles.dataValue}>
+                    {selectedRecord?.maxSpeed?.toFixed(1) ?? '--'} km/h
+                  </Text>
+                </View>
+                <View style={styles.dataItem}>
+                  <Icon name="thermometer" type="material-community" size={20} color="#666" />
+                  <Text style={styles.dataLabel}>平均温度</Text>
+                  <Text style={styles.dataValue}>
+                    {selectedRecord?.weather?.temp ?? '--'}°C
+                  </Text>
+                </View>
+              </View>
+            </Card>
           )}
         </>
       )}
@@ -266,9 +238,7 @@ const styles = StyleSheet.create({
     color: '#666'
   },
   detailCard: {
-    margin: 16,
-    borderRadius: 16,
-    padding: 16
+    margin: 16
   },
   detailHeader: {
     flexDirection: 'row',

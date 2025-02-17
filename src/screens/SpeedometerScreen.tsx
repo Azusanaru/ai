@@ -1,20 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Dimensions, TouchableOpacity, ScrollView, RefreshControl, Alert } from 'react-native';
-import { Text, Card, Icon } from '@rneui/themed';
+import { View, StyleSheet, Dimensions, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
+import { Card, Text, useTheme, ProgressBar } from 'react-native-paper';
 import { LineChart } from 'react-native-chart-kit';
 import * as Location from 'expo-location';
 import { LinearGradient } from 'expo-linear-gradient';
-import { theme } from '../theme/theme';
 import { RideRecord } from '../types/RideRecord';
-import { saveRideRecord } from '../services/RecordStorage';
-import { calculateDistance } from '../utils/geo';
-// import { calculateCalories } from '../utils/calories';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import DataItem from '../components/DataItem';
 import { useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '../navigation/types';
+
 
 export default function SpeedometerScreen() {
+  const theme = useTheme();
   const [speed, setSpeed] = useState(0);
   const [distance, setDistance] = useState(0);
   const [time, setTime] = useState(0);
@@ -176,160 +172,141 @@ export default function SpeedometerScreen() {
 
   return (
     <ScrollView
-      contentContainerStyle={styles.container}
+      contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={[theme.colors?.primary || '#007AFF']}
-          progressBackgroundColor="#fff"
+          colors={[theme.colors.primary]}
+          progressBackgroundColor={theme.colors.surface}
         />
       }
     >
-      <LinearGradient colors={['#f7f9fc', '#e3f2fd']} style={styles.gradient}>
-        {/* 骑行状态指示器 */}
-        <View style={styles.statusIndicator}>
-          <View style={[styles.statusDot, {backgroundColor: isRiding ? '#4CAF50' : '#F44336'}]} />
-          <Text style={styles.statusText}>{isRiding ? '骑行中' : '已停止'}</Text>
-        </View>
-
-        {/* 主速度仪表盘 */}
-        <Card containerStyle={styles.speedCard}>
-          <Text style={styles.speedValue}>{speed.toFixed(1)}</Text>
-          <Text style={styles.speedUnit}>km/h</Text>
-          <View style={styles.speedStats}>
-            <Text style={styles.statusText}>最大 {maxSpeed.toFixed(1)}</Text>
-            <Text style={styles.statusText}>平均 {(totalDistance/(time/3600)).toFixed(1)}</Text>
-          </View>
+      <LinearGradient 
+        colors={[theme.colors.primaryContainer, theme.colors.secondaryContainer]} 
+        style={styles.gradient}
+      >
+        {/* 状态指示器 */}
+        <Card style={styles.statusCard}>
+          <Card.Content>
+            <View style={styles.statusContent}>
+              <MaterialCommunityIcons 
+                name={isRiding ? 'motion-sensor' : 'power-plug-off'} 
+                size={24} 
+                color={theme.colors.onSurface}
+              />
+              <Text variant="labelLarge" style={{ color: theme.colors.onSurface }}>
+                {isRiding ? '实时监测中' : '设备未连接'}
+              </Text>
+            </View>
+          </Card.Content>
         </Card>
 
-        {/* 控制按钮容器 */}
-        <Card containerStyle={[styles.chartCard, { overflow: 'hidden' }]}>
-          <View style={styles.controlContainer}>
-          <View style={styles.controlRow}>
-            <TouchableOpacity
-              style={[styles.secondaryButton, { marginRight: 16 }]}
-              onPress={() => {
-                setIsPaused(!isPaused);
-                if (isPaused) {
-                  setPauseTime(prev => prev + (Date.now() - pauseTime));
-                } else {
-                  setPauseTime(Date.now());
-                }
-              }}
-              disabled={!isRiding}
-            >
-              <MaterialCommunityIcons 
-                name={isPaused ? "play-circle" : "pause-circle"} 
-                size={36} 
-                color="white" 
-              />
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.controlButton, isRiding ? styles.stopButton : styles.startButton]}
-              onPress={handleRideControl}
-            >
-              <MaterialCommunityIcons 
-                name={isRiding ? "stop-circle" : "play-circle"} 
-                size={48} 
-                color="white" 
-              />
-            </TouchableOpacity>
-          </View>
-          </View>
+        {/* 主仪表盘 */}
+        <Card style={styles.mainCard}>
+          <Card.Content>
+            <View style={styles.speedContainer}>
+              <Text variant="displayLarge" style={styles.speedValue}>
+                {speed.toFixed(1)}
+              </Text>
+              <Text variant="titleMedium" style={styles.speedUnit}>km/h</Text>
+            </View>
+            
+            <ProgressBar 
+              progress={speed / 40} 
+              color={theme.colors.primary} 
+              style={styles.progressBar}
+            />
+            
+            <View style={styles.speedStats}>
+              <View style={styles.statItem}>
+                <Text variant="labelMedium">最大</Text>
+                <Text variant="titleMedium">{maxSpeed.toFixed(1)}</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text variant="labelMedium">平均</Text>
+                <Text variant="titleMedium">{(totalDistance/(time/3600)).toFixed(1)}</Text>
+              </View>
+            </View>
+          </Card.Content>
         </Card>
 
-        {/* 数据统计行（2个卡片） */}
+        {/* 控制面板 */}
+        <Card style={styles.controlCard}>
+          <Card.Content>
+            <View style={styles.controlRow}>
+              <TouchableOpacity
+                style={[styles.controlButton, { backgroundColor: theme.colors.secondary }]}
+                onPress={handleRideControl}
+              >
+                <MaterialCommunityIcons 
+                  name={isRiding ? 'stop-circle' : 'play-circle'} 
+                  size={48} 
+                  color={theme.colors.onSecondary}
+                />
+              </TouchableOpacity>
+            </View>
+          </Card.Content>
+        </Card>
+
+        {/* 数据卡片组 */}
         <View style={styles.dataGrid}>
-          <Card containerStyle={styles.dataCard}>
-            <Text style={styles.dataLabel}>骑行距离</Text>
-            <View style={styles.distanceContainer}>
-              <Text style={styles.distanceValue}>{(totalDistance/1000).toFixed(2)}</Text>
-              <Text style={styles.distanceUnit}>km</Text>
-              <Text style={styles.distanceSubValue}>（{(totalDistance).toFixed(0)} 米）</Text>
-            </View>
+          <Card style={styles.dataCard}>
+            <Card.Content>
+              <View style={styles.dataContent}>
+                <MaterialCommunityIcons 
+                  name="map-marker-distance" 
+                  size={24} 
+                  color={theme.colors.primary}
+                />
+                <Text variant="titleLarge">{(totalDistance/1000).toFixed(2)}</Text>
+                <Text variant="bodyMedium">公里</Text>
+              </View>
+            </Card.Content>
           </Card>
 
-          <Card containerStyle={styles.dataCard}>
-            <Text style={styles.dataLabel}>骑行时间</Text>
-            <View style={styles.timeContainer}>
-              <Text style={styles.timeValue}>{formatTime(time).split(':')[0]}</Text>
-              <Text style={styles.timeUnit}>h</Text>
-              <Text style={styles.timeValue}>{formatTime(time).split(':')[1]}</Text>
-              <Text style={styles.timeUnit}>m</Text>
-              <Text style={styles.timeValue}>{formatTime(time).split(':')[2]}</Text>
-              <Text style={styles.timeUnit}>s</Text>
-            </View>
+          <Card style={styles.dataCard}>
+            <Card.Content>
+              <View style={styles.dataContent}>
+                <MaterialCommunityIcons 
+                  name="timer-outline" 
+                  size={24} 
+                  color={theme.colors.primary}
+                />
+                <Text variant="titleLarge">{formatTime(time)}</Text>
+              </View>
+            </Card.Content>
           </Card>
         </View>
 
-        {/* 实时速度曲线 */}
-        <Card containerStyle={[styles.chartCard, { overflow: 'hidden' }]}>
-          <Text style={styles.sectionTitle}>速度变化曲线</Text>
-          <View style={styles.chartContainer}>
+        {/* 图表卡片 */}
+        <Card style={styles.chartCard}>
+          <Card.Title 
+            title="速度曲线" 
+            titleVariant="titleLarge"
+            right={() => <MaterialCommunityIcons name="chart-line" size={24} color={theme.colors.onSurface}/>}
+          />
+          <Card.Content>
             <LineChart
               data={{
-                labels: [],
+                labels: speedData.map((_, i) => `${i * 5}s`),
                 datasets: [{ data: speedData }]
               }}
-              width={Dimensions.get('window').width - 48}
-              height={180}
+              width={Dimensions.get('window').width - 32}
+              height={160}
               chartConfig={{
-                backgroundColor: '#fff',
-                backgroundGradientFrom: '#fff',
-                backgroundGradientTo: '#fff',
+                backgroundColor: theme.colors.surface,
+                backgroundGradientFrom: theme.colors.surface,
+                backgroundGradientTo: theme.colors.surfaceVariant,
                 decimalPlaces: 0,
-                color: (opacity = 1) => '#000',
-                labelColor: (opacity = 1) => '#666',
+                color: () => theme.colors.primary,
+                labelColor: () => theme.colors.onSurface,
               }}
               bezier
-              withDots={false}
-              withInnerLines={false}
               style={styles.chart}
             />
-          </View>
+          </Card.Content>
         </Card>
-
-        {/* 运动数据概览（4个卡片） */}
-        <View style={styles.dataGrid}>
-          <Card containerStyle={styles.dataCard}>
-            <Icon name="speedometer" type="material-community" size={24} color="#4CAF50" />
-            <View style={styles.metricContainer}>
-              <Text style={styles.dataValue}>{(totalDistance/time*3.6).toFixed(1) || 0}</Text>
-              <Text style={styles.dataUnit}>km/h</Text>
-            </View>
-            <Text style={styles.dataLabel}>平均速度</Text>
-          </Card>
-
-          <Card containerStyle={styles.dataCard}>
-            <Icon name="arrow-up" type="material-community" size={24} color="#FF9800" />
-            <View style={styles.metricContainer}>
-              <Text style={styles.dataValue}>{maxSpeed.toFixed(1)}</Text>
-              <Text style={styles.dataUnit}>km/h</Text>
-            </View>
-            <Text style={styles.dataLabel}>最高速度</Text>
-          </Card>
-
-          <Card containerStyle={styles.dataCard}>
-            <Icon name="altimeter" type="material-community" size={24} color="#2196F3" />
-            <View style={styles.metricContainer}>
-              <Text style={styles.dataValue}>--</Text>
-              <Text style={styles.dataUnit}>米</Text>
-            </View>
-            <Text style={styles.dataLabel}>当前海拔</Text>
-          </Card>
-
-          <Card containerStyle={styles.dataCard}>
-            <Icon name="fire" type="material-community" size={24} color="#E91E63" />
-            <View style={styles.metricContainer}>
-              <Text style={styles.dataValue}>{(totalDistance * 60).toFixed(0)}</Text>
-              <Text style={styles.dataUnit}>kcal</Text>
-            </View>
-            <Text style={styles.dataLabel}>卡路里</Text>
-          </Card>
-        </View>
-
-
       </LinearGradient>
     </ScrollView>
   );
@@ -338,165 +315,80 @@ export default function SpeedometerScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: 16
   },
   gradient: {
     flex: 1,
-    paddingBottom: 24
+    padding: 16,
   },
-  statusIndicator: {
+  statusCard: {
+    marginBottom: 16,
+    borderRadius: 12,
+  },
+  statusContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16
+    padding: 12,
+    gap: 8,
   },
-  statusDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 8
-  },
-  statusText: {
-    color: '#666',
-    fontSize: 14
-  },
-  speedCard: {
+  mainCard: {
     borderRadius: 24,
-    padding: 32,
-    alignItems: 'center'
+    marginBottom: 16,
+  },
+  speedContainer: {
+    alignItems: 'center',
+    marginVertical: 16,
   },
   speedValue: {
     fontSize: 64,
-    fontWeight: '300',
-    color: '#E91E63'
+    lineHeight: 72,
   },
   speedUnit: {
-    fontSize: 24,
-    color: '#666',
-    marginTop: -8
+    marginTop: -8,
+  },
+  progressBar: {
+    height: 8,
+    borderRadius: 4,
+    marginVertical: 16,
   },
   speedStats: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginTop: 16
+    justifyContent: 'space-around',
+    marginTop: 8,
   },
-  controlContainer: {
+  statItem: {
     alignItems: 'center',
-    marginVertical: 24
+  },
+  controlCard: {
+    borderRadius: 24,
+    marginBottom: 16,
   },
   controlRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  controlButton: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: 8,
   },
-  startButton: {
-    backgroundColor: '#4CAF50'
-  },
-  stopButton: {
-    backgroundColor: '#F44336'
-  },
-  secondaryButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#FF9800',
-    justifyContent: 'center',
-    alignItems: 'center'
+  controlButton: {
+    borderRadius: 40,
+    padding: 12,
   },
   dataGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    marginTop: 16,
-    gap: 12
+    gap: 16,
+    marginBottom: 16,
   },
   dataCard: {
     flex: 1,
-    minWidth: 100,
-    padding: 16,
-    borderRadius: 12,
-    backgroundColor: '#f8f9fa',
-    alignItems: 'center'
+    borderRadius: 16,
   },
-  dataLabel: {
-    color: '#666',
-    fontSize: 12,
-    marginBottom: 8
-  },
-  dataValue: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#000'
-  },
-  dataUnit: {
-    fontSize: 12,
-    color: '#999',
-    marginLeft: 4
+  dataContent: {
+    alignItems: 'center',
+    gap: 4,
   },
   chartCard: {
     borderRadius: 24,
-    marginTop: 16,
-    padding: 16,
-    overflow: 'hidden'
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 16
-  },
-  chartContainer: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    marginHorizontal: -8,
-    marginTop: -8
   },
   chart: {
-    borderRadius: 16
+    borderRadius: 16,
+    marginVertical: 8,
   },
-  timeContainer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginTop: 8
-  },
-  timeValue: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#000',
-    marginHorizontal: 2
-  },
-  timeUnit: {
-    fontSize: 12,
-    color: '#999',
-    marginRight: 8
-  },
-  distanceContainer: {
-    alignItems: 'center'
-  },
-  distanceValue: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#000'
-  },
-  distanceUnit: {
-    fontSize: 12,
-    color: '#999'
-  },
-  distanceSubValue: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 4
-  },
-  metricContainer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginVertical: 4
-  }
 }); 

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, FlatList, StyleSheet, TextInput, TouchableOpacity, Text } from 'react-native';
-import { Avatar, Input, ListItem } from '@rneui/themed';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Avatar } from 'react-native-paper';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { theme } from '../theme/theme';
 
 export default function ChatScreen() {
@@ -42,11 +43,10 @@ export default function ChatScreen() {
             {/* 消息气泡 */}
             <View style={[styles.bubble, item.isMe ? styles.myBubble : styles.otherBubble]}>
               {!item.isMe && (
-                <Avatar
+                <Avatar.Image
                   size={36}
-                  rounded
                   source={{ uri: 'https://randomuser.me/api/portraits/men/1.jpg' }}
-                  containerStyle={styles.avatar}
+                  style={styles.avatar}
                 />
               )}
               <View>

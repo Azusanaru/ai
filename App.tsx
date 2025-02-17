@@ -1,5 +1,5 @@
 import { NavigationContainer } from '@react-navigation/native';
-import { ThemeProvider } from '@rneui/themed';
+import { ThemeProvider } from './theme/ThemeContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import { theme } from './src/theme/theme';
 import { useFonts } from 'expo-font';
@@ -16,7 +16,7 @@ export default function App() {
   }
 
   return (
-      <ThemeProvider theme={theme}>
+      <ThemeProvider>
         <NavigationContainer>
             <AppNavigator />
         </NavigationContainer>
