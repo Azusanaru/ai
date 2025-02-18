@@ -8,7 +8,6 @@ import { RideRecord } from '../types/RideRecord';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
-
 export default function SpeedometerScreen() {
   const theme = useTheme();
   const [speed, setSpeed] = useState(0);

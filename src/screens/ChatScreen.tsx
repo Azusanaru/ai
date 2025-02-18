@@ -3,7 +3,6 @@ import { View, FlatList, StyleSheet, TextInput, TouchableOpacity, Text } from 'r
 import { Avatar } from 'react-native-paper';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { theme } from '../theme/theme';
 
 export default function ChatScreen() {
   const [message, setMessage] = useState('');
@@ -65,7 +64,7 @@ export default function ChatScreen() {
       {/* 输入区域 */}
       <View style={styles.inputContainer}>
         <TouchableOpacity style={styles.plusButton}>
-          <Ionicons name="add-circle" size={32} color={theme.colors?.primary || '#007AFF'} />
+          <Ionicons name="add-circle" size={32} color={'#007AFF'} />
         </TouchableOpacity>
 
         <TextInput

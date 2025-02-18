@@ -267,4 +267,20 @@ interface PromiseConstructor {
   reject<T = never>(reason?: any): Promise<T>;
 }
 
-declare var Promise: PromiseConstructor; 
+declare var Promise: PromiseConstructor;
+
+declare module 'expo-constants' {
+  export interface ExpoConfig {
+    extra?: {
+      EXPO_ROUTER_APP_ROOT: string;
+    };
+  }
+}
+
+declare module '@env' {
+  export const EXPO_ROUTER_APP_ROOT: string;
+}
+
+declare interface NodeRequire {
+  context: (path: string, deep?: boolean, filter?: RegExp) => any;
+} 

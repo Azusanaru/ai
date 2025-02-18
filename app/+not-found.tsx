@@ -1,18 +1,17 @@
-import { View, Text, StyleSheet } from 'react-native';
-import { Button } from '@rneui/themed';
-import { router } from 'expo-router';
+import React from 'react';
+import { View, Text, StyleSheet, Button } from 'react-native';
+import { useRouter } from 'expo-router';
 
 export default function NotFoundScreen() {
+  const router = useRouter();
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.h1}>404</Text>
-      <Text style={styles.h4}>您访问的页面不存在</Text>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text style={{ fontSize: 24 }}>404 - 页面未找到</Text>
       <Button
         title="返回首页"
-        onPress={() => router.replace('/(tabs)')}
-        buttonStyle={styles.button}
-        titleStyle={styles.buttonText}
-        containerStyle={styles.buttonContainer}
+        onPress={() => router.replace('/')}
+        color="#2196F3"
       />
     </View>
   );
@@ -24,21 +23,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f8f9fa',
-    padding: 20
+    padding: 20,
   },
   h1: { fontSize: 24, fontWeight: 'bold' },
   h4: { fontSize: 16 },
-  button: {
-    backgroundColor: '#2196F3',
-    borderRadius: 25,
-    paddingVertical: 15,
-    width: 200
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '600'
-  },
-  buttonContainer: {
-    marginTop: 20
-  }
 });

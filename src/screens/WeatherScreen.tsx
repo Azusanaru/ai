@@ -1,12 +1,40 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { Card, List, useTheme } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LineChart } from 'react-native-chart-kit';
+import axios from 'axios';
+
+interface WeatherData {
+  current: {
+    temp: number;
+    condition: string;
+    humidity: number;
+    windSpeed: number;
+    feelsLike: number;
+    uvIndex: number;
+  };
+}
 
 const WeatherScreen = () => {
   const theme = useTheme();
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const API_KEY = process.env.TOMORROW_IO_API_KEY;
+
+  const getWeatherData = async () => {
+    try {
+      const response = await axios.get(`https://api.tomorrow.io/v4/weather/forecast?apikey=${API_KEY}`);
+      setWeatherData(response.data);
+    } catch (error) {
+      console.error('获取天气数据失败:', error);
+    }
+  };
+
+  useEffect(() => {
+    getWeatherData();
+  }, []);
+
   const currentWeather = {
     temp: 12,
     condition: '晴',
@@ -67,20 +95,23 @@ const WeatherScreen = () => {
           </View>
 
           <View style={styles.tempContainer}>
-            <Text style={theme.fonts.displayMedium}>{currentWeather.temp}</Text>
+            <Text style={theme.fonts.displayMedium}>{weatherData ? weatherData.current.temp : '加载中...'}</Text>
             <Text style={theme.fonts.bodyLarge}>°C</Text>
           </View>
+          {weatherData && weatherData.current && (
+            <Text style={[styles.condition, theme.fonts.titleMedium]}>
+              {weatherData.current.condition}
+            </Text>
+          )}
 
-          <Text style={[styles.condition, theme.fonts.titleMedium]}>
-            {currentWeather.condition}
-          </Text>
-
-          <View style={styles.detailGrid}>
-            <WeatherDetail icon="thermometer" title="体感温度" value={`${currentWeather.feelsLike}°`} />
-            <WeatherDetail icon="water-percent" title="湿度" value={`${currentWeather.humidity}%`} />
-            <WeatherDetail icon="weather-windy" title="风速" value={`${currentWeather.windSpeed}m/s`} />
-            <WeatherDetail icon="weather-sunny" title="紫外线" value={currentWeather.uvIndex.toString()} />
-          </View>
+          {weatherData && weatherData.current && (
+            <View style={styles.detailGrid}>
+              <WeatherDetail icon="thermometer" title="体感温度" value={`${weatherData.current.feelsLike}°`} />
+              <WeatherDetail icon="water-percent" title="湿度" value={`${weatherData.current.humidity}%`} />
+              <WeatherDetail icon="weather-windy" title="风速" value={`${weatherData.current.windSpeed}m/s`} />
+              <WeatherDetail icon="weather-sunny" title="紫外线" value={weatherData.current.uvIndex.toString()} />
+            </View>
+          )}
         </Card.Content>
       </Card>
 

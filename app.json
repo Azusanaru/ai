@@ -44,7 +44,13 @@
       },
       "eas": {
         "projectId": "c830cb1a-a347-4d9f-bab9-65ac6794aba6"
-      }
+      },
+      "GOOGLE_MAPS_API_KEY": "your_key_here",
+      "TOMORROW_IO_API_KEY": "your_key_here",
+      "EXPO_ROUTER_APP_ROOT": "./app",
+      "EXPO_PROJECT_ROOT": ".",
+      "EXPO_USE_PATH_ALIASES": true,
+      "EXPO_DEBUG": true
     },
     "owner": "czcheng1997",
     "assetBundlePatterns": [

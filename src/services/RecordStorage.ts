@@ -1,6 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RideRecord } from '../types/RideRecord';
-import { v4 as uuidv4 } from 'uuid';
 
 const STORAGE_KEY = '@rideRecords';
 

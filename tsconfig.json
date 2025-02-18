@@ -1,25 +1,16 @@
 {
-  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "jsx": "react-native",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
-    },
-    "types": [
-      "@types/webpack-env",
-      "google.maps"
-    ],
-    "module": "esnext",
-    "moduleResolution": "node"
+      "@app/*": ["./app/*"],
+      "@components/*": ["./src/components/*"]
+    }
   },
+  "extends": "expo/tsconfig.base",
   "include": [
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ],
-  "exclude": ["node_modules"]
+  ]
 }

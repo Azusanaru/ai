@@ -4,7 +4,6 @@ import { List } from 'react-native-paper';
 import { getRideRecords, deleteRideRecord } from '../services/RecordStorage';
 import { RideRecord } from '../types/RideRecord';
 import { formatDuration, getWeatherIcon } from '../utils/format';
-import { theme } from '../theme/theme';
 import { useIsFocused } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import Icon from '@expo/vector-icons/MaterialCommunityIcons';
@@ -80,7 +79,7 @@ export default function RecordScreen() {
     <View style={styles.container}>
       {isLoading ? (
         <View style={styles.emptyContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <ActivityIndicator size="large" color={'#007AFF'} />
         </View>
       ) : (
         <>
@@ -90,7 +89,7 @@ export default function RecordScreen() {
                 name="bike"
                 type="material-community"
                 size={80}
-                color={theme.colors.primary}
+                color={'#007AFF'}
               />
               <Text style={styles.emptyText}>暂无骑行记录</Text>
               <Text style={styles.emptySubText}>开始骑行后记录将在此显示</Text>
@@ -184,7 +183,7 @@ export default function RecordScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background
+    backgroundColor: '#f8f9fa'
   },
   listContainer: {
     paddingBottom: 20
@@ -200,7 +199,7 @@ const styles = StyleSheet.create({
     elevation: 2
   },
   selectedItem: {
-    borderColor: theme.colors.primary,
+    borderColor: '#007AFF',
     borderWidth: 1
   },
   weatherIcon: {
@@ -248,7 +247,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8
   },
   detailTitle: {
-    color: theme.colors.primary,
+    color: '#007AFF',
     fontWeight: '600',
     fontSize: 18
   },

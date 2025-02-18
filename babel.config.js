@@ -3,10 +3,10 @@ module.exports = function(api) {
   return {
     presets: ['babel-preset-expo'],
     plugins: [
+      'expo-router/babel',
       ['module-resolver', {
         alias: {
-          '@mapbox': './node_modules/@mapbox',
-          '^@rnmapbox/maps$': '@rnmapbox/maps/react-native-mapbox-gl'
+          '@': './src',
         }
       }]
     ]

@@ -3,7 +3,6 @@ import { GoogleMap, LoadScript, Autocomplete, DirectionsService, DirectionsRende
 import { View, StyleSheet, TextInput, Button, Alert } from 'react-native';
 import { FAB } from 'react-native-paper';
 import * as Location from 'expo-location';
-import { theme } from '@/styles/theme';
 
 const containerStyle = {
   width: '100%',
@@ -33,8 +32,6 @@ const MapScreen = () => {
   const [searchBounds, setSearchBounds] = useState<google.maps.LatLngBounds>();
   const [searchResult, setSearchResult] = useState<google.maps.places.PlaceResult>();
   const [clickedPosition, setClickedPosition] = useState<google.maps.LatLngLiteral | null>(null);
-
-  const safeTheme = theme ;
 
   const styles = StyleSheet.create({
     container: {
@@ -67,20 +64,20 @@ const MapScreen = () => {
     },
     input: {
       fontSize: 16,
-      color: safeTheme.colors.black || '#333',
+      color: '#333',
       paddingHorizontal: 16,
       marginLeft: -8,
       includeFontPadding: false
     },
     searchButton: {
-      backgroundColor: safeTheme.colors.primary || '#3385FF',
+      backgroundColor:  '#3385FF',
       borderRadius: 24,
       height: 48,
       minWidth: 80,
       paddingHorizontal: 24
     },
     searchButtonText: {
-      color: safeTheme.colors.white || '#FFF',
+      color:  '#FFF',
       fontSize: 16,
       fontWeight: '500'
     },

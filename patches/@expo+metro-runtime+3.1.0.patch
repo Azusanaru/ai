@@ -1,0 +1,11 @@
+diff --git a/node_modules/@expo/metro-runtime/build/error-overlay/formatProjectFilePath.js b/node_modules/@expo/metro-runtime/build/error-overlay/formatProjectFilePath.js
+index 1234567..89abcde 100644
+--- a/node_modules/@expo/metro-runtime/build/error-overlay/formatProjectFilePath.js
++++ b/node_modules/@expo/metro-runtime/build/error-overlay/formatProjectFilePath.js
+@@ -5,6 +5,7 @@ function formatProjectFilePath(projectRoot, filePath) {
+     return filePath;
+   }
+   const projectRootParts = _path().default.normalize(projectRoot).split(_path().default.sep);
++  if (!projectRootParts) return filePath;
+   const fileParts = _path().default.normalize(filePath).split(_path().default.sep);
+   let startIndex = 0; 
