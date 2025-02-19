@@ -33,6 +33,12 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "需要访问您的位置以获取当地天气"
+        }
       ]
     ],
     "experiments": {
@@ -45,8 +51,8 @@
       "eas": {
         "projectId": "c830cb1a-a347-4d9f-bab9-65ac6794aba6"
       },
-      "GOOGLE_MAPS_API_KEY": "your_key_here",
-      "TOMORROW_IO_API_KEY": "your_key_here",
+      "GOOGLE_MAPS_API_KEY": "AIzaSyCdIMvnFk7tRGWaBxE_AKBCg_I7PmC-roo",
+      "TOMORROW_IO_API_KEY": "sSE6Qq7cNeBPZYOXV5LeA33JbNnOjdaj",
       "EXPO_ROUTER_APP_ROOT": "./app",
       "EXPO_PROJECT_ROOT": ".",
       "EXPO_USE_PATH_ALIASES": true,
